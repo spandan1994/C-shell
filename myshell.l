@@ -13,7 +13,12 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "execution.h" //spandan
+#include "execution.h" 
+
+#ifndef DEBUG
+	#define DEBUG 
+	FILE* logfile;
+#endif
 
 #define MAX_COMMANDS_NO 20
 #define MAX_ARGS_NO 20						
@@ -123,18 +128,22 @@ int yywrap()
 
 void print_command_storage(void)
 {
-	
+	#ifdef DEFINE
 	for(int i = 0; commands[i][0] !=  NULL; i++)
 	{
-		printf("command: ");
+		fprintf(logfile, "command: ");
 		for(int j = 0; commands[i][j] !=  NULL; j++)
 		{
-			printf("%s ", commands[i][j]);
+			printf(logfile, "%s ", commands[i][j]);
 		}
-		printf("\n");
+		printf(logile, "\n");
 	}
-	printf("input: %s output %s backopt %d\n", input_fname, output_fname, background_opt);
+	printf(logfile, "input: %s output %s backopt %d\n", input_fname, output_fname, background_opt);
+	fflush(logfile);
+	#endif
 
+	
+	return;
 
 }
 
@@ -172,16 +181,19 @@ void prepare_exec_env(void)
 
 void print_exec_env(void)
 {
+	#ifdef DEBUG
 	for(int i = 0 ; i < command_seq.num_cmds ; i++)
 	{
-		printf("command: ");
+		fprintf(logfile, "command: ");
 		for(int j = 0 ; command_seq.arglists[i][j] !=  NULL ; j++)
 		{
-			printf("%s ", command_seq.arglists[i][j]);
+			printf(logfile, "%s ", command_seq.arglists[i][j]);
 		}
-		printf("\n");
+		printf(logfile, "\n");
 	}
-	printf("input: %s output %s backopt %d\n", command_seq.in_fname, command_seq.out_fname, command_seq.background);
+	printf(logfile, "input: %s output %s backopt %d\n", command_seq.in_fname, command_seq.out_fname, command_seq.background);
+	fflush(logfile);
+	#endif 
 
 	return;
 }
@@ -224,18 +236,18 @@ int authenticate_user(const char* uname)
 
     if (ret == PAM_SUCCESS) 
     {
-        //fprintf(stdout, "authenticated\n");
+        fprintf(logfile, "user authenticated\n");
     } 
     else 
     {
-        fprintf(stdout, "not authenticated\n");
+        fprintf(logfile , "user not authenticated\n");
 	exit(1);
     }
 
     if (pam_end(pamh, ret) != PAM_SUCCESS) 
     {     
         pamh = NULL;
-        fprintf(stdout, "auth: failed to release authenticator\n");
+        fprintf(logfile, "auth: failed to release authenticator\n");
         exit(1);
     }
 
@@ -249,8 +261,14 @@ int authenticate_user(const char* uname)
 int main(int argc, char** argv) 
 {
 	int ret;
-
 	
+	#ifdef DEBUG
+	if((logfile = fopen("shell.log", "w") ) == NULL)
+	{
+		exit(1);	
+	}
+	#endif
+
 	printf("username: ");
 	scanf("%20s", user);
 	authenticate_user(user);
@@ -282,11 +300,11 @@ int main(int argc, char** argv)
 				for(int i=0 ; i<command_seq.num_cmds ; i++)
 				{
 					int find_st = find_path(i,command_seq.arglists);
-					if(find_st < 0) fprintf(stderr,"error : find_path\n");
+					if(find_st < 0) fprintf(logfile,"error : find_path\n");
 				}
 
 				int exec_st = exec_wrapper(&command_seq);
-        			if(exec_st < 0) fprintf(stderr,"error : exec_wrapper\n");
+        			if(exec_st < 0) fprintf(logfile,"error : exec_wrapper\n");
 			}
 		}
 		

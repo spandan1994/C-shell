@@ -456,7 +456,12 @@ char *yytext;
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "execution.h" //spandan
+#include "execution.h" 
+
+#ifndef DEBUG
+	#define DEBUG 
+	FILE* logfile;
+#endif
 
 #define MAX_COMMANDS_NO 20
 #define MAX_ARGS_NO 20						
@@ -499,8 +504,8 @@ static struct pam_conv conv =
 };
 
 
-#line 503 "lex.yy.c"
-#line 504 "lex.yy.c"
+#line 508 "lex.yy.c"
+#line 509 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -717,10 +722,10 @@ YY_DECL
 		}
 
 	{
-#line 62 "myshell.l"
+#line 67 "myshell.l"
 
 
-#line 724 "lex.yy.c"
+#line 729 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -780,12 +785,12 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 64 "myshell.l"
+#line 69 "myshell.l"
 ; 		//ignore
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 66 "myshell.l"
+#line 71 "myshell.l"
 {
 				switch(state)
 				{
@@ -815,26 +820,26 @@ YY_RULE_SETUP
 			}
 	YY_BREAK
 case 3:
-#line 95 "myshell.l"
+#line 100 "myshell.l"
 case 4:
 YY_RULE_SETUP
-#line 95 "myshell.l"
+#line 100 "myshell.l"
 {
 				state = OREDIR; 
 			}
 	YY_BREAK
 case 5:
-#line 100 "myshell.l"
+#line 105 "myshell.l"
 case 6:
 YY_RULE_SETUP
-#line 100 "myshell.l"
+#line 105 "myshell.l"
 {
 				state = IREDIR; 
 			}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 104 "myshell.l"
+#line 109 "myshell.l"
 {
 				command_no++;
 				state = COMMAND;
@@ -842,7 +847,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 109 "myshell.l"
+#line 114 "myshell.l"
 {
 				if(state = BACKGROUND_OPT)
 					{
@@ -852,10 +857,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 116 "myshell.l"
+#line 121 "myshell.l"
 ECHO;
 	YY_BREAK
-#line 859 "lex.yy.c"
+#line 864 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1860,7 +1865,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 116 "myshell.l"
+#line 121 "myshell.l"
 
 
 int yywrap()
@@ -1871,18 +1876,22 @@ int yywrap()
 
 void print_command_storage(void)
 {
-	
+	#ifdef DEFINE
 	for(int i = 0; commands[i][0] !=  NULL; i++)
 	{
-		printf("command: ");
+		fprintf(logfile, "command: ");
 		for(int j = 0; commands[i][j] !=  NULL; j++)
 		{
-			printf("%s ", commands[i][j]);
+			printf(logfile, "%s ", commands[i][j]);
 		}
-		printf("\n");
+		printf(logile, "\n");
 	}
-	printf("input: %s output %s backopt %d\n", input_fname, output_fname, background_opt);
+	printf(logfile, "input: %s output %s backopt %d\n", input_fname, output_fname, background_opt);
+	fflush(logfile);
+	#endif
 
+	
+	return;
 
 }
 
@@ -1920,16 +1929,19 @@ void prepare_exec_env(void)
 
 void print_exec_env(void)
 {
+	#ifdef DEBUG
 	for(int i = 0 ; i < command_seq.num_cmds ; i++)
 	{
-		printf("command: ");
+		fprintf(logfile, "command: ");
 		for(int j = 0 ; command_seq.arglists[i][j] !=  NULL ; j++)
 		{
-			printf("%s ", command_seq.arglists[i][j]);
+			printf(logfile, "%s ", command_seq.arglists[i][j]);
 		}
-		printf("\n");
+		printf(logfile, "\n");
 	}
-	printf("input: %s output %s backopt %d\n", command_seq.in_fname, command_seq.out_fname, command_seq.background);
+	printf(logfile, "input: %s output %s backopt %d\n", command_seq.in_fname, command_seq.out_fname, command_seq.background);
+	fflush(logfile);
+	#endif 
 
 	return;
 }
@@ -1972,18 +1984,18 @@ int authenticate_user(const char* uname)
 
     if (ret == PAM_SUCCESS) 
     {
-        //fprintf(stdout, "authenticated\n");
+        fprintf(logfile, "user authenticated\n");
     } 
     else 
     {
-        fprintf(stdout, "not authenticated\n");
+        fprintf(logfile , "user not authenticated\n");
 	exit(1);
     }
 
     if (pam_end(pamh, ret) != PAM_SUCCESS) 
     {     
         pamh = NULL;
-        fprintf(stdout, "auth: failed to release authenticator\n");
+        fprintf(logfile, "auth: failed to release authenticator\n");
         exit(1);
     }
 
@@ -1997,8 +2009,14 @@ int authenticate_user(const char* uname)
 int main(int argc, char** argv) 
 {
 	int ret;
-
 	
+	#ifdef DEBUG
+	if((logfile = fopen("shell.log", "w") ) == NULL)
+	{
+		exit(1);	
+	}
+	#endif
+
 	printf("username: ");
 	scanf("%20s", user);
 	authenticate_user(user);
@@ -2030,11 +2048,11 @@ int main(int argc, char** argv)
 				for(int i=0 ; i<command_seq.num_cmds ; i++)
 				{
 					int find_st = find_path(i,command_seq.arglists);
-					if(find_st < 0) fprintf(stderr,"error : find_path\n");
+					if(find_st < 0) fprintf(logfile,"error : find_path\n");
 				}
 
 				int exec_st = exec_wrapper(&command_seq);
-        			if(exec_st < 0) fprintf(stderr,"error : exec_wrapper\n");
+        			if(exec_st < 0) fprintf(logfile,"error : exec_wrapper\n");
 			}
 		}
 		

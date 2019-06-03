@@ -1,0 +1,6 @@
+1. To work with first clone the remote repo $ git clone https://github.com/manmatha-roy/myshell
+Note that you need to do it for the very first time. At later times, you need only to issue $ git pull origin  within that directory to get your working copy synced with remote one.
+
+2. Keep coding. To add a new file $ git add <filename> . Otherwise git wont be recording the changes for that file. When done commit to your repo first  $ git commit  . This will provide you an editor to briefly describe what changes you have made . Note that this change has been recorded in your local copy only. You need to issue  $ git push origin   to push it to remote repo so that others can also access( via  $ git pull ) the new code now.
+
+Tips: Commit frequently to keep track every changes you make. Push it only when you are done e.g. implemented a new feature or fixed a bug.. Also dont forget to pull everytime before you start coding. Any issue you should report at  issues  in https://github.com/manmatha-roy/myshell. This will be convenient for us. Open an account @github.com. Rememeber you credentials. You will need it everytime you do clone, pull or push. Also provide your usernames to me. So that I can add it to contributor list.
