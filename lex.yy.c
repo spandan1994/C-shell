@@ -2018,28 +2018,24 @@ int main(int argc, char** argv)
 			if (strlen(buf) > 0) 
 			{
   				add_history(buf);
+				reset_command_storage();
+				yy_scan_string(buf);
+				do{ ret = yylex(); puts(yytext); } while(ret != 0);
+				yy_delete_buffer(YY_CURRENT_BUFFER);
+				free(buf);
+				print_command_storage();
+				prepare_exec_env();
+				print_exec_env();
+
+				for(int i=0 ; i<command_seq.num_cmds ; i++)
+				{
+					int find_st = find_path(i,command_seq.arglists);
+					if(find_st < 0) fprintf(stderr,"error : find_path\n");
+				}
+
+				int exec_st = exec_wrapper(&command_seq);
+        			if(exec_st < 0) fprintf(stderr,"error : exec_wrapper\n");
 			}
-
-			reset_command_storage();
-			yy_scan_string(buf);
-			do{ ret = yylex(); puts(yytext); } while(ret != 0);
-			yy_delete_buffer(YY_CURRENT_BUFFER);
-			free(buf);
-
-			print_command_storage();
-
-			prepare_exec_env();
-
-			print_exec_env();
-
-			for(int i=0 ; i<command_seq.num_cmds ; i++)
-			{
-				int find_st = find_path(i,command_seq.arglists);
-				if(find_st < 0) fprintf(stderr,"error : find_path\n");
-			}
-
-			int exec_st = exec_wrapper(&command_seq);
-        		if(exec_st < 0) fprintf(stderr,"error : exec_wrapper\n");
 		}
 		
 	}
