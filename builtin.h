@@ -25,10 +25,6 @@ int unsetenv_wrapper(const char *path_name, const char *in_fname, const char *ou
 
 int builtin_cd(const char *path_name, const char *in_fname, const char *out_fname);
 
-int modify_pwd();
-
-int modify_pwd_wrapper();
-
 int cd_wrapper(const char *path_name, const char *in_fname, const char *out_fname);
 
 int cd_wrapper1(const char *path_name);
