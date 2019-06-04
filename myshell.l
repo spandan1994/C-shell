@@ -112,7 +112,7 @@ static struct pam_conv conv =
 			}
 
 "&"			{
-				if(state = BACKGROUND_OPT)
+				if(state == BACKGROUND_OPT)
 					{
 						background_opt = 1;
 					}
@@ -174,7 +174,7 @@ void prepare_exec_env(void)
 	else
 		strcpy(command_seq.out_fname,"stdout");
 	
-	command_seq.background = background_opt;
+	command_seq.background = 1 - background_opt;
 
 	return;
 }
@@ -187,11 +187,11 @@ void print_exec_env(void)
 		fprintf(logfile, "command: ");
 		for(int j = 0 ; command_seq.arglists[i][j] !=  NULL ; j++)
 		{
-			printf(logfile, "%s ", command_seq.arglists[i][j]);
+			fprintf(logfile, "%s ", command_seq.arglists[i][j]);
 		}
-		printf(logfile, "\n");
+		fprintf(logfile, "\n");
 	}
-	printf(logfile, "input: %s output %s backopt %d\n", command_seq.in_fname, command_seq.out_fname, command_seq.background);
+	fprintf(logfile, "input %s output %s backopt %d\n", command_seq.in_fname, command_seq.out_fname, command_seq.background);
 	fflush(logfile);
 	#endif 
 
@@ -254,7 +254,19 @@ int authenticate_user(const char* uname)
     return ( ret == PAM_SUCCESS ? 0:1 );
 }
 
+void free_exec_env(void)
+{
+	int i,j;
+	for(i = 0 ; i < command_seq.num_cmds ; i++){
+		for(j = 0 ; command_seq.arglists[i][j] != NULL ; j++){
+			free(command_seq.arglists[i][j]);
+		}
+		free(command_seq.arglists[i][j]);
 
+		free(command_seq.arglists[i]);
+	}
+	free(command_seq.arglists);
+}
 
 
 
@@ -297,6 +309,7 @@ int main(int argc, char** argv)
 				prepare_exec_env();
 				print_exec_env();
 
+
 				for(int i=0 ; i<command_seq.num_cmds ; i++)
 				{
 					int find_st = find_path(i,command_seq.arglists);
@@ -305,11 +318,17 @@ int main(int argc, char** argv)
 
 				int exec_st = exec_wrapper(&command_seq);
         			if(exec_st < 0) fprintf(logfile,"error : exec_wrapper\n");
+			
+				//freeing space
+				free_exec_env();
 			}
-		}
+			
+			else free(buf);			
 		
+		}
+	
 	}
 
-  return 0;
+  	return 0;
 }
 

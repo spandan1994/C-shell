@@ -1,2 +1,15 @@
 user authenticated
-command: command: command: 
+command: cd .. 
+input stdin output stdout backopt 1
+command: cd myshell 
+input stdin output stdout backopt 1
+command: cd .. 
+input stdin output stdout backopt 1
+command: ls 
+input stdin output stdout backopt 1
+command: cd .. 
+input stdin output stdout backopt 1
+command: ls 
+input stdin output stdout backopt 1
+command: ps 
+input stdin output stdout backopt 1

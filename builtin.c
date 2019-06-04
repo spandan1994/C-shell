@@ -185,56 +185,6 @@ int builtin_cd(const char *path_name, const char *in_fname, const char *out_fnam
     return 0;
 }
 
-int modify_pwd(){
-    int fdpipe[2], dup2_st;
-    char temp[100];
-    int pipe_st = pipe(fdpipe);
-    if(pipe_st < 0) {fprintf(stderr,"error : pipe\n"); return -1;}
-
-    int status = fork();
-    if(status == 0){
-        dup2(fdpipe[1],1);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); exit(-1);}
-        close(fdpipe[0]);
-        close(fdpipe[1]);
-        char *arglist[] = {"/bin/pwd",NULL};
-        int exec_st = execv(arglist[0],arglist);
-        if(exec_st < 0) {fprintf(stderr,"error : exec : pwd\n"); exit(-1);}
-    }
-    else{
-        int wstatus;
-        dup2_st = dup2(fdpipe[0],0);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        close(fdpipe[0]);
-        close(fdpipe[1]);
-        close(1);
-        //temp = readline(NULL);
-        scanf("%s",temp);
-        int wait_st = waitpid(-1,&wstatus,0);
-        if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
-        if(WEXITSTATUS(wstatus) == -1) return -1;
-        //scanf("%c",&t);
-        int env_st = setenv("PWD",temp,1);
-        if(env_st < 0) {fprintf(stderr,"error : setenv\n"); return -1;}
-        return 0;
-    }
-}
-
-int modify_pwd_wrapper(){
-    int temp_in = dup(0);
-    if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
-    int temp_out = dup(1);
-    if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}
-    int pwd_st = modify_pwd();
-    if(pwd_st < 0) {fprintf(stderr,"error : modify_pwd\n"); return -1;}
-    int dup2_st = dup2(temp_in,0);
-    if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-    dup2_st = dup2(temp_out,1);
-    if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-    close(temp_in);
-    close(temp_out);
-    return 0;
-}
 
 int cd_wrapper(const char *path_name, const char *in_fname, const char *out_fname){
     int temp_in = dup(0);
@@ -250,8 +200,18 @@ int cd_wrapper(const char *path_name, const char *in_fname, const char *out_fnam
     close(temp_in);
     close(temp_out);
 
-    int pwd_st = modify_pwd_wrapper();
-    if(pwd_st < 0) return -1;
+    int size = 100;
+    char *curr_dir = (char *)malloc(size * sizeof(char));
+    curr_dir = getcwd(curr_dir,size);
+    while(curr_dir == NULL)
+    {
+	    size = size * 2;
+	    curr_dir = (char *)malloc(size * sizeof(char));
+	    curr_dir = getcwd(curr_dir,size);
+    }
+    int env_st = setenv("PWD",curr_dir,1);
+    if(curr_dir != NULL) free(curr_dir);
+    if(env_st < 0) {fprintf(stderr,"error : setenv\n"); return -1;}
     return 0;
 }
 
@@ -259,7 +219,16 @@ int cd_wrapper1(const char *path_name){
     int cd_st = chdir(path_name);
     if(cd_st < 0) {fprintf(stderr,"error : chdir\n"); return -1;}
 
-    int pwd_st = modify_pwd_wrapper();
-    if(pwd_st < 0) return -1;
-    return 0;
+    int size = 100;
+    char *curr_dir = (char *)malloc(size * sizeof(char));
+    curr_dir = getcwd(curr_dir,size);
+    while(curr_dir == NULL)
+    {
+	    size = size * 2;
+	    curr_dir = (char *)malloc(size * sizeof(char));
+	    curr_dir = getcwd(curr_dir,size);
+    }
+    int env_st = setenv("PWD",curr_dir,1);
+    if(curr_dir != NULL) free(curr_dir);
+    if(env_st < 0) {fprintf(stderr,"error : setenv\n"); return -1;}
 }
