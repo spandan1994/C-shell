@@ -2033,7 +2033,7 @@ int main(int argc, char** argv)
 	scanf("%20s", user);
 	authenticate_user(user);
     	
-	rl_bind_key('\t', rl_insert);
+	//rl_bind_key('\t', rl_insert);
 	char* buf;
 	char* input;
 
