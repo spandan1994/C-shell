@@ -1,4 +1,5 @@
 #include "builtin.h"
+#include <termios.h>
 
 #ifndef EXECUTION_H
 #define EXECUTION_H

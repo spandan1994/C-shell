@@ -31,6 +31,7 @@ int my_file_dup(char *fname, int mode, int fd){ //opens a file with name fname a
 
 int execution(PIPE_LINE *cmd_seq){
     static int i = 1;
+    //pid_t shell_GID = getpgrp();   //for controlling background processes
     //fprintf(stderr,"value of i = %d\n",i);
     int dup2_st, exec_st, wait_st, pipe_st, status, wstatus, cd_st, env_st;
     //int temp_out = 0;
@@ -57,9 +58,16 @@ int execution(PIPE_LINE *cmd_seq){
             if(setenv_wrapper((const char**)cmd_seq->arglists[0],cmd_seq->in_fname,cmd_seq->out_fname) == -1) return -1;
             return 0;
         }
-        //builtin------------------------------------------------------------------------------------------------------
+        //builtin--------------------------------------------------------------------------------------------------------
         status = fork();
         if(status == 0){
+	    //run in background--------------------------
+	    if(cmd_seq->background == 0)
+	    {
+		setpgid(0,0);
+		//tcsetpgrp(STDIN_FILENO,shell_GID);
+	    }
+	    //------------------------------------------
             if(strcmp(cmd_seq->in_fname,"stdin") != 0){
                 if(my_file_dup(cmd_seq->in_fname,0,0) < 0) exit(-1);
             }
@@ -73,7 +81,7 @@ int execution(PIPE_LINE *cmd_seq){
             if(cmd_seq->background){
                 wait_st = waitpid(-1,&wstatus,0);
             }
-            else{
+            else{ 
                 wait_st = waitpid(-1,&wstatus,WNOHANG);
             }
             if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
@@ -90,6 +98,13 @@ int execution(PIPE_LINE *cmd_seq){
 
         status = fork();
         if(status == 0){
+	    //run in background----------------------------------------------
+	    if(cmd_seq->background == 0)
+	    {
+		setpgid(0,0);
+		//tcsetpgrp(STDIN_FILENO,shell_GID);
+	    }
+	    //---------------------------------------------------------------
             if(i == cmd_seq->num_cmds){
                 if(strcmp(cmd_seq->in_fname,"stdin") != 0){
                     if(my_file_dup(cmd_seq->in_fname,0,0) < 0) exit(-1);
