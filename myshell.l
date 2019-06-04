@@ -112,7 +112,7 @@ static struct pam_conv conv =
 			}
 
 "&"			{
-				if(state == BACKGROUND_OPT)
+				if(state = BACKGROUND_OPT)
 					{
 						background_opt = 1;
 					}
@@ -138,7 +138,7 @@ void print_command_storage(void)
 		}
 		printf(logile, "\n");
 	}
-	printf(logfile, "input: %s output %s backopt %d\n", input_fname, output_fname, background_opt);
+	printf(logfile, "input: %s output: %s backopt %d\n", input_fname, output_fname, background_opt);
 	fflush(logfile);
 	#endif
 

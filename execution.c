@@ -62,11 +62,12 @@ int execution(PIPE_LINE *cmd_seq){
         status = fork();
         if(status == 0){
 	    //run in background--------------------------
-	    if(cmd_seq->background == 0)
+	    /*if(cmd_seq->background == 0)
 	    {
 		setpgid(0,0);
 		//tcsetpgrp(STDIN_FILENO,shell_GID);
-	    }
+
+	    }*/
 	    //------------------------------------------
             if(strcmp(cmd_seq->in_fname,"stdin") != 0){
                 if(my_file_dup(cmd_seq->in_fname,0,0) < 0) exit(-1);
@@ -81,7 +82,7 @@ int execution(PIPE_LINE *cmd_seq){
             if(cmd_seq->background){
                 wait_st = waitpid(-1,&wstatus,0);
             }
-            else{ 
+            else{
                 wait_st = waitpid(-1,&wstatus,WNOHANG);
             }
             if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
@@ -99,11 +100,11 @@ int execution(PIPE_LINE *cmd_seq){
         status = fork();
         if(status == 0){
 	    //run in background----------------------------------------------
-	    if(cmd_seq->background == 0)
+	    /*if(cmd_seq->background == 0)
 	    {
 		setpgid(0,0);
 		//tcsetpgrp(STDIN_FILENO,shell_GID);
-	    }
+	    }*/
 	    //---------------------------------------------------------------
             if(i == cmd_seq->num_cmds){
                 if(strcmp(cmd_seq->in_fname,"stdin") != 0){
@@ -184,7 +185,7 @@ int exec_wrapper(PIPE_LINE *cmd_seq){
     if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
     int temp_out = dup(1);
     if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}
-    int exec_st = execution(cmd_seq);
+    int exec_st = execution(cmd_seq);  
     if(exec_st < 0) {fprintf(stderr,"error : execution\n"); return -1;}
     int dup2_st = dup2(temp_in,0);
     if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
