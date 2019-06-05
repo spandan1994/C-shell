@@ -2005,15 +2005,20 @@ int authenticate_user(const char* uname)
 void free_exec_env(void)
 {
 	int i,j;
-	for(i = 0 ; i < command_seq.num_cmds ; i++){
-		for(j = 0 ; command_seq.arglists[i][j] != NULL ; j++){
+	for(i = 0 ; i < command_seq.num_cmds ; i++)
+	{
+		for(j = 0 ; command_seq.arglists[i][j] != NULL ; j++)
+		{
 			free(command_seq.arglists[i][j]);
 		}
 		free(command_seq.arglists[i][j]);
-
 		free(command_seq.arglists[i]);
 	}
 	free(command_seq.arglists);
+	command_seq.num_cmds = 0;
+	command_seq.background = 1;
+
+	return;
 }
 
 
@@ -2033,7 +2038,6 @@ int main(int argc, char** argv)
 	scanf("%20s", user);
 	authenticate_user(user);
     	
-	//rl_bind_key('\t', rl_insert);
 	char* buf;
 	char* input;
 
@@ -2067,7 +2071,6 @@ int main(int argc, char** argv)
 				int exec_st = exec_wrapper(&command_seq);
         			if(exec_st < 0) fprintf(logfile,"error : exec_wrapper\n");
 			
-				//freeing space
 				free_exec_env();
 			}
 			

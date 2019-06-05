@@ -80,10 +80,10 @@ int execution(PIPE_LINE *cmd_seq){
         }
         else{
             if(cmd_seq->background){
-                wait_st = waitpid(-1,&wstatus,0);
+                wait_st = waitpid(status,&wstatus,0);
             }
             else{
-                wait_st = waitpid(-1,&wstatus,WNOHANG);
+                wait_st = waitpid(status,&wstatus,WNOHANG);
             }
             if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
             if(WEXITSTATUS(wstatus) == -1) return -1;

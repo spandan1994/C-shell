@@ -1,4 +1,5 @@
 *.o
 shell
 *.out
+*.swp
 tags
