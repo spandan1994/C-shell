@@ -2043,6 +2043,7 @@ int main(int argc, char** argv)
 	{
 		getcwd(cwd,  sizeof(cwd)); 
 		sprintf(prompt, "%s @ %s >>> ", user, cwd);
+		if(waitpid(-1,NULL,WNOHANG) == 0) printf("background processes running\n");
 		if((buf = readline(prompt)) != NULL )
 		{
 			if (strlen(buf) > 0) 

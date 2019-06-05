@@ -1,11 +1,5 @@
 user authenticated
-command: ls 
+command: vim todo 
 input stdin output stdout backopt 1
-command: ls 
-input stdin output stdout backopt 0
-command: ls 
-input stdin output stdout backopt 1
-command: ls 
-input stdin output stdout backopt 1
-command: ls 
+command: vim todo 
 input stdin output stdout backopt 0

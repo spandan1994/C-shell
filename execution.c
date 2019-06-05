@@ -62,12 +62,12 @@ int execution(PIPE_LINE *cmd_seq){
         status = fork();
         if(status == 0){
 	    //run in background--------------------------
-	    /*if(cmd_seq->background == 0)
+	    if(cmd_seq->background == 0)
 	    {
 		setpgid(0,0);
 		//tcsetpgrp(STDIN_FILENO,shell_GID);
 
-	    }*/
+	    }
 	    //------------------------------------------
             if(strcmp(cmd_seq->in_fname,"stdin") != 0){
                 if(my_file_dup(cmd_seq->in_fname,0,0) < 0) exit(-1);
@@ -81,12 +81,13 @@ int execution(PIPE_LINE *cmd_seq){
         else{
             if(cmd_seq->background){
                 wait_st = waitpid(-1,&wstatus,0);
+		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
             }
-            else{
+            /*else{
                 wait_st = waitpid(-1,&wstatus,WNOHANG);
             }
             if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
-            if(WEXITSTATUS(wstatus) == -1) return -1;
+            if(WEXITSTATUS(wstatus) == -1) return -1;*/
             return 0;
         }
     }
@@ -100,11 +101,11 @@ int execution(PIPE_LINE *cmd_seq){
         status = fork();
         if(status == 0){
 	    //run in background----------------------------------------------
-	    /*if(cmd_seq->background == 0)
+	    if(cmd_seq->background == 0)
 	    {
 		setpgid(0,0);
 		//tcsetpgrp(STDIN_FILENO,shell_GID);
-	    }*/
+	    }
 	    //---------------------------------------------------------------
             if(i == cmd_seq->num_cmds){
                 if(strcmp(cmd_seq->in_fname,"stdin") != 0){
@@ -169,12 +170,13 @@ int execution(PIPE_LINE *cmd_seq){
 
             if(cmd_seq->background){
                 wait_st = waitpid(-1,&wstatus,0);
+		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
             }
-            else{
+            /*else{
                 wait_st = waitpid(-1,&wstatus,WNOHANG);
             }
             if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
-            if(WEXITSTATUS(wstatus) == -1) return -1;
+            if(WEXITSTATUS(wstatus) == -1) return -1;*/
             return 0;
         }
     }
