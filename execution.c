@@ -80,15 +80,15 @@ int execution(PIPE_LINE *cmd_seq){
         }
         else{
             if(cmd_seq->background){
-                wait_st = waitpid(-1,&wstatus,0);
+                wait_st = waitpid(status,&wstatus,0);
 		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
             }
             /*else{
-                wait_st = waitpid(-1,&wstatus,WNOHANG);
+                wait_st = waitpid(status,&wstatus,WNOHANG);
             }
             if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
             if(WEXITSTATUS(wstatus) == -1) return -1;*/
-            return 0;
+	    return 0; 
         }
     }
 //there is a single command---------------------------------------------------------------------------------------
@@ -169,7 +169,7 @@ int execution(PIPE_LINE *cmd_seq){
             close(temp_out);*/
 
             if(cmd_seq->background){
-                wait_st = waitpid(-1,&wstatus,0);
+                wait_st = waitpid(status,&wstatus,0);
 		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
             }
             /*else{
@@ -177,7 +177,7 @@ int execution(PIPE_LINE *cmd_seq){
             }
             if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
             if(WEXITSTATUS(wstatus) == -1) return -1;*/
-            return 0;
+            return 0;  
         }
     }
 }
@@ -195,7 +195,7 @@ int exec_wrapper(PIPE_LINE *cmd_seq){
     if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
     close(temp_in);
     close(temp_out);
-    return 0;
+    return exec_st;
 }
 
 

@@ -39,6 +39,8 @@ enum {
 }; 
 
 PIPE_LINE command_seq; //spandan
+int exec_st = 0; //spandan (for checking exec status)
+siginfo_t process_info; //spandan (for retrieving info of children)
 
 char* commands[MAX_COMMANDS_NO][MAX_ARGS_NO];
 char* input_fname = NULL;
@@ -257,15 +259,20 @@ int authenticate_user(const char* uname)
 void free_exec_env(void)
 {
 	int i,j;
-	for(i = 0 ; i < command_seq.num_cmds ; i++){
-		for(j = 0 ; command_seq.arglists[i][j] != NULL ; j++){
+	for(i = 0 ; i < command_seq.num_cmds ; i++)
+	{
+		for(j = 0 ; command_seq.arglists[i][j] != NULL ; j++)
+		{
 			free(command_seq.arglists[i][j]);
 		}
 		free(command_seq.arglists[i][j]);
-
 		free(command_seq.arglists[i]);
 	}
 	free(command_seq.arglists);
+	command_seq.num_cmds = 0;
+	command_seq.background = 1;
+
+	return;
 }
 
 
@@ -285,9 +292,8 @@ int main(int argc, char** argv)
 	scanf("%20s", user);
 	authenticate_user(user);
     	
-	//rl_bind_key('\t', rl_insert);
 	char* buf;
-	char* input;
+	//char* input;
 
 	system("clear");
 
@@ -295,7 +301,22 @@ int main(int argc, char** argv)
 	{
 		getcwd(cwd,  sizeof(cwd)); 
 		sprintf(prompt, "%s @ %s >>> ", user, cwd);
-		if(waitpid(-1,NULL,WNOHANG) == 0) printf("background processes running\n");
+
+//check for background processes--------------------------------------------------------------------------------------------
+		process_info.si_pid = 0;
+		waitid(P_ALL,0,&process_info,WEXITED|WSTOPPED|WCONTINUED|WNOHANG);
+		if(process_info.si_pid > 0)
+		{
+			if(process_info.si_code == CLD_STOPPED) printf("%d stopped\n",process_info.si_pid);
+			else if(process_info.si_code == CLD_EXITED) printf("%d exited\n",process_info.si_pid);
+			else if(process_info.si_code == CLD_KILLED) printf("%d killed\n",process_info.si_pid);
+			else if(process_info.si_code == CLD_DUMPED) printf("%d core dumped\n",process_info.si_pid);
+			else if(process_info.si_code == CLD_TRAPPED) printf("%d trapped\n",process_info.si_pid);
+			else if(process_info.si_code == CLD_CONTINUED) printf("%d continued\n",process_info.si_pid);
+			else printf("abnormal behaviour of child %d\n",exec_st);
+		}
+//background processes---------------------------------------------------------------------------------------------------------------
+
 		if((buf = readline(prompt)) != NULL )
 		{
 			if (strlen(buf) > 0) 
@@ -317,10 +338,9 @@ int main(int argc, char** argv)
 					if(find_st < 0) fprintf(logfile,"error : find_path\n");
 				}
 
-				int exec_st = exec_wrapper(&command_seq);
+				exec_st = exec_wrapper(&command_seq);
         			if(exec_st < 0) fprintf(logfile,"error : exec_wrapper\n");
 			
-				//freeing space
 				free_exec_env();
 			}
 			
