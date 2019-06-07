@@ -249,7 +249,7 @@ int execution(PIPE_LINE *cmd_seq){
 }
 
 int exec_wrapper(PIPE_LINE *cmd_seq){
-    signal_ignore(); //ignore signals from children while execution. Later when everything is
+    //signal_ignore(); //ignore signals from children while execution. Later when everything is
     		     //done this option goes in main. The shell will always ignore stopping
 		     //signals
     pid_t shell_GID = getpgid(0);  //save gid of shell for future use
@@ -269,11 +269,11 @@ int exec_wrapper(PIPE_LINE *cmd_seq){
     close(temp_in);
     close(temp_out);
     
-    tcsetpgrp(STDIN_FILENO,shell_GID);  //restore terminal control to shell
-    tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);  //restore input terminal to previous setting
-    tcsetattr(STDOUT_FILENO,TCSADRAIN,&term_out);  //restore output terminal to previous setting
+    //tcsetpgrp(STDIN_FILENO,shell_GID);  //restore terminal control to shell
+    //tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);  //restore input terminal to previous setting
+    //tcsetattr(STDOUT_FILENO,TCSADRAIN,&term_out);  //restore output terminal to previous setting
 
-    signal_default(); //This will not be needed later. Shell will continue to ignore all 
+    //signal_default(); //This will not be needed later. Shell will continue to ignore all 
     		      //signals from the children and the children will continue to obey
 		      //all the signals.
     return exec_st;
