@@ -1,6 +1,37 @@
 
 #include "builtin.h"
 
+//not yet fullproof, needs checking----------------------------------------------------------------
+int builtin_fg1(const char *path_name)
+{
+
+    if(strcmp(path_name,"--help") == 0){
+        printf("Synopsis : fg pid\n");
+        printf("           fg --help\n\n");
+        printf("Description :\nfg brings the process specified by pid to the foreground.\n\n");
+        printf("Options :\n");
+        printf("        --help : prints this help and exits\n");
+    }
+    else if(atoi(path_name) > 0){
+	pid_t pgid = getpgid(atoi(path_name));
+	if(pgid < 0) {fprintf(stderr,"error : getpgid\n"); return -1;}
+	pid_t shell_GID = getpgid(0);
+	struct termios term_in;
+	tcgetattr(STDIN_FILENO,&term_in);
+	tcsetpgrp(STDIN_FILENO,pgid);
+	if(kill(atoi(path_name),SIGCONT) < 0) {fprintf(stderr,"error : kill\n"); return -1;}
+
+	//restore shell------------------------------------------
+	waitpid(atoi(path_name),NULL,0);
+	tcsetpgrp(STDIN_FILENO,shell_GID);
+	tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);
+	//-------------------------------------------------------
+    }
+    //strcpy(PWD,path_name);
+    return 0;
+}
+//---------------------------------------------------------------------------------------------------
+
 int builtin_setenv(const char **argv, const char *in_fname, const char *out_fname){
     int dup2_st, env_st;
 

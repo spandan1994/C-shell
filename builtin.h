@@ -5,11 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <termios.h>
+#include <signal.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
 #ifndef BUILTIN_H
 #define BUILTIN_H
+
+int builtin_fg1(const char *path_name);
 
 int builtin_setenv(const char **argv, const char *in_fname, const char *out_fname);
 

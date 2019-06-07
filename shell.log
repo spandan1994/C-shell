@@ -1,14 +1,9 @@
 user authenticated
 command: ls 
-input stdin output stdout backopt 0
-command: vim todo 
-input stdin output stdout backopt 0
-command: ls -al 
-input stdin output stdout backopt 1
-command: ps 
-input stdin output stdout backopt 1
-command: cat execution.c 
 command: less 
+input stdin output stdout backopt 0
+command: fg 19100 
 input stdin output stdout backopt 1
-command: kill 23455 
+error : exec_wrapper
+command: ps 
 input stdin output stdout backopt 1
