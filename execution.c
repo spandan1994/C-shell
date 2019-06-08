@@ -55,9 +55,10 @@ int execution(PIPE_LINE *cmd_seq){
     static int i = 1;
     //fprintf(stderr,"value of i = %d\n",i);
     int dup2_st, exec_st, wait_st, pipe_st, status, wstatus, cd_st, env_st;
-    //static int new_gid = 0;  //new_gid for background pipeline
+    static int new_gid = 0;  //new_gid for background pipeline
+    //fprintf(stderr,"value of i = %d\n",new_gid);
     //int temp_out = 0;
-    if(i > cmd_seq->num_cmds) {i = 1; /*new_gid = 0;*/ return 0;}
+    if(i > cmd_seq->num_cmds) {i = 1; new_gid = 0; return 0;}
 
 //there is a single command------------------------------------------------------------------------------------------------
     if(cmd_seq->num_cmds == 1){
@@ -79,23 +80,23 @@ int execution(PIPE_LINE *cmd_seq){
 		    return 0;
 		}
 
-		/*if(strcmp(cmd_seq->arglists[0][0],"fg") == 0){
+		if(strcmp(cmd_seq->arglists[0][0],"fg") == 0){
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : fg : no argument. Type fg --help\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : fg : excess arguments\n"); return -1;}
-		    env_st = builtin_fg1(cmd_seq->arglists[0][1]);
+		    env_st = fg_wrapper(cmd_seq->arglists[0][1]);
 		    if(env_st < 0) {fprintf(stderr,"error : fg\n"); return -1;}
 		    return 0;
-		}*/   //not yet fullproof. check into it.
+		}   //not yet fullproof. check into it.
 
 		if(strcmp(cmd_seq->arglists[0][0],"setenv") == 0){
 		    if(setenv_wrapper((const char**)cmd_seq->arglists[0],cmd_seq->in_fname,cmd_seq->out_fname) == -1) return -1;
 		    return 0;
 		}
 		//builtin--------------------------------------------------------------------------------------------------------
-	     }
+	    }
         status = fork();
         if(status == 0){
-	    signal_default();  //default signaling in the children
+	    //signal_default();  //default signaling in the children
 	    //run in background--------------------------
 	    if(cmd_seq->background == 0)
 	    {
@@ -127,7 +128,7 @@ int execution(PIPE_LINE *cmd_seq){
 		    }
 		    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"fg") == 0){
 			fprintf(stderr,"error : fg : called from background process\n");
-			exit(-1);
+			exit(0);
 		    }
 		    if(strcmp(cmd_seq->arglists[0][0],"setenv") == 0){
 			if(setenv_wrapper((const char**)cmd_seq->arglists[0],cmd_seq->in_fname,cmd_seq->out_fname) == -1) exit(-1);
@@ -161,11 +162,11 @@ int execution(PIPE_LINE *cmd_seq){
 
         status = fork();
         if(status == 0){
-	    signal_default();  //default signaling in the children
+	    //signal_default();  //default signaling in the children
 	    //run in background----------------------------------------------
 	    if(cmd_seq->background == 0)
 	    {
-		setpgid(0,0);
+		setpgid(0,new_gid);  //all processes in the pipeline should have same gid
 	    }
 	    //---------------------------------------------------------------
             if(i == cmd_seq->num_cmds){
@@ -203,7 +204,7 @@ int execution(PIPE_LINE *cmd_seq){
             }
             if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"fg") == 0){
 		fprintf(stderr,"error : fg : not called from main process\n");
-		exit(-1);
+		exit(0);
             }
             if(strcmp(cmd_seq->arglists[0][0],"setenv") == 0){
                 if(setenv_wrapper((const char**)cmd_seq->arglists[0],cmd_seq->in_fname,cmd_seq->out_fname) == -1) exit(-1);
@@ -219,7 +220,7 @@ int execution(PIPE_LINE *cmd_seq){
         else{
             /*temp_out = dup(1);
             if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}*/
-	    //if(i == 1) new_gid = status;  //all processes in the pipeline should have same gid
+	    if(i == 1) new_gid = status;  //all processes in the pipeline should have same gid
 
             dup2_st = dup2(fdpipe[1],1);
             if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
@@ -249,13 +250,6 @@ int execution(PIPE_LINE *cmd_seq){
 }
 
 int exec_wrapper(PIPE_LINE *cmd_seq){
-    //signal_ignore(); //ignore signals from children while execution. Later when everything is
-    		     //done this option goes in main. The shell will always ignore stopping
-		     //signals
-    pid_t shell_GID = getpgid(0);  //save gid of shell for future use
-    struct termios term_in, term_out;
-    tcgetattr(STDIN_FILENO,&term_in);  //save input terminal
-    tcgetattr(STDOUT_FILENO,&term_out);  //save output terminal
     int temp_in = dup(0);
     if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
     int temp_out = dup(1);
@@ -269,13 +263,6 @@ int exec_wrapper(PIPE_LINE *cmd_seq){
     close(temp_in);
     close(temp_out);
     
-    //tcsetpgrp(STDIN_FILENO,shell_GID);  //restore terminal control to shell
-    //tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);  //restore input terminal to previous setting
-    //tcsetattr(STDOUT_FILENO,TCSADRAIN,&term_out);  //restore output terminal to previous setting
-
-    //signal_default(); //This will not be needed later. Shell will continue to ignore all 
-    		      //signals from the children and the children will continue to obey
-		      //all the signals.
     return exec_st;
 }
 

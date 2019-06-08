@@ -12,6 +12,10 @@ typedef struct{
     int background;
 }PIPE_LINE;
 
+void signal_ignore(void);
+
+void signal_default(void);
+
 int execution(PIPE_LINE *cmd_seq);
 
 int exec_wrapper(PIPE_LINE *cmd_seq);

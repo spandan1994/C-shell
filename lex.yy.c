@@ -2039,11 +2039,14 @@ int main(int argc, char** argv)
 	printf("username: ");
 	scanf("%20s", user);
 	authenticate_user(user);
-    	
+    
+	//rl_bind_key('\t', rl_insert);		
 	char* buf;
 	//char* input;
 
 	system("clear");
+
+	//signal_ignore();  //ignore all signals except SIGINT
 
 	for(;;)
 	{

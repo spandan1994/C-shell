@@ -8,27 +8,40 @@ int builtin_fg1(const char *path_name)
     if(strcmp(path_name,"--help") == 0){
         printf("Synopsis : fg pid\n");
         printf("           fg --help\n\n");
-        printf("Description :\nfg brings the process specified by pid to the foreground.\n\n");
+        printf("Description :\nfg brings the process group of the process specified by pid to the foreground.\n\n");
         printf("Options :\n");
         printf("        --help : prints this help and exits\n");
+	return 0;
     }
     else if(atoi(path_name) > 0){
 	pid_t pgid = getpgid(atoi(path_name));
-	if(pgid < 0) {fprintf(stderr,"error : getpgid\n"); return -1;}
+	if(pgid < 0) {fprintf(stderr,"error : getpgid\n"); return(-1);}
 	pid_t shell_GID = getpgid(0);
 	struct termios term_in;
 	tcgetattr(STDIN_FILENO,&term_in);
+	signal (SIGTTOU, SIG_IGN);
+	signal (SIGTSTP, SIG_IGN);
 	tcsetpgrp(STDIN_FILENO,pgid);
-	if(kill(atoi(path_name),SIGCONT) < 0) {fprintf(stderr,"error : kill\n"); return -1;}
+	if(kill( -(atoi(path_name)) , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
 
 	//restore shell------------------------------------------
-	waitpid(atoi(path_name),NULL,0);
+	if(waitpid(atoi(path_name),NULL,0) < 0) {fprintf(stderr,"error : wait\n"); return(-1);}
 	tcsetpgrp(STDIN_FILENO,shell_GID);
 	tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);
 	//-------------------------------------------------------
+	return 0;
     }
     //strcpy(PWD,path_name);
+    printf("pid not valid\n");
     return 0;
+}
+
+int fg_wrapper(const char *path_name)
+{
+	if(builtin_fg1(path_name) < 0) fprintf(stderr,"error : fg\n");
+	signal (SIGTTOU, SIG_DFL);
+	signal (SIGTSTP, SIG_DFL);
+	return 0;
 }
 //---------------------------------------------------------------------------------------------------
 
