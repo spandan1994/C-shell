@@ -4,6 +4,8 @@
 #ifndef BUILTIN_H
 #define BUILTIN_H
 
+int search_env(char *command);
+
 int builtin_fg1(char *path_name, list *process_list);
 
 int fg_wrapper(char *path_name, list *process_list);
