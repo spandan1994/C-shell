@@ -22,7 +22,7 @@ int search_env(char *command){
         exec_st = execv(whichlist[0],whichlist);
         if(exec_st < 0) {fprintf(stderr,"error : exec : which\n"); exit(-1);}
     }
-    else{
+    else if(status > 0){
         int temp_in = dup(0);
         if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
         dup2_st = dup2(fdpipe[0],0);
@@ -36,6 +36,10 @@ int search_env(char *command){
         dup2_st = dup2(temp_in,0);
         if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
         close(temp_in);
+    }
+    else{
+	    fprintf(stderr,"error : fork failed\n");
+	    return -1;
     }
     
     return 0;

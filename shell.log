@@ -1,36 +1,44 @@
 user authenticated
 command: ls 
 command: less 
+input stdin output stdout backopt 1
+command: ls 
 input stdin output stdout backopt 0
-command: fg ls 
-input stdin output stdout backopt 1
-command: ps 
-input stdin output stdout backopt 1
-command: fg less 
-input stdin output stdout backopt 1
-command: fg less 
-input stdin output stdout backopt 1
-command: vim todo 
-input stdin output stdout backopt 0
-command: fg vim 
-input stdin output stdout backopt 1
-command: ps 
-input stdin output stdout backopt 1
-command: fg vim 
-input stdin output stdout backopt 1
-command: vim todo 
-input execution.h output tags backopt 1
-command: vim todo 
+command: gedit tags 
 input stdin output stdout backopt 1
 command: gedit tags 
 input stdin output stdout backopt 0
-command: ps 
+command: cd ../myshell/ 
 input stdin output stdout backopt 1
-command: ps 
+command: cd .. 
+input stdin output stdout backopt 1
+command: ls 
+input stdin output stdout backopt 1
+command: cd .. 
 input stdin output stdout backopt 1
 command: ls 
 input stdin output stdout backopt 1
+command: cd myfirstfolder/ 
+input stdin output stdout backopt 1
 command: ls 
-input stdin output stdout backopt 0
-command: ps 
+input stdin output stdout backopt 1
+command: cd /home/spandan 
+input stdin output stdout backopt 1
+command: ls 
+input stdin output stdout backopt 1
+command: cd SPANDAN/ 
+input stdin output stdout backopt 1
+command: ls 
+input stdin output stdout backopt 1
+command: cd Important/ 
+input stdin output stdout backopt 1
+command: ls 
+input stdin output stdout backopt 1
+command: cd 'UGC NET/' 
+input stdin output stdout backopt 1
+error : exec_wrapper
+command: cd 'UGC NET' 
+input stdin output stdout backopt 1
+error : exec_wrapper
+command: cd UGC NET/ 
 input stdin output stdout backopt 1

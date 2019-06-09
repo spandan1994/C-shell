@@ -140,7 +140,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
             exec_st = execv(cmd_seq->arglists[0][0],cmd_seq->arglists[0]);
             if(exec_st < 0) {fprintf(stderr,"error : exec : %s\n",cmd_seq->arglists[0][0]); exit(-1);}
         }
-        else{
+        else if(status > 0){
 	    if(cmd_seq->background == 0)
 	    {
 		node *new = Makenode(cmd_seq->arglists[0][0],status);
@@ -158,6 +158,10 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
             if(WEXITSTATUS(wstatus) == -1) return -1;*/
 	    return 0; 
         }
+	else{
+		fprintf(stderr,"error : fork failed\n");
+		return -1;
+	}
     }
 //there is a single command---------------------------------------------------------------------------------------
 
@@ -223,7 +227,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
                 exit(-1);
             }
         }
-        else{
+        else if(status > 0){
 	    if(cmd_seq->background == 0)
 	    {
 		node *new = Makenode(cmd_seq->arglists[(cmd_seq->num_cmds) - i][0],status);
@@ -257,6 +261,10 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
             if(WEXITSTATUS(wstatus) == -1) return -1;*/
             return 0;  
         }
+	else{
+		fprintf(stderr,"error : fork failed\n");
+		return -1;
+	}
     }
 }
 
@@ -297,7 +305,7 @@ int find_path(int i, char ***arglists){
         exec_st = execv(whichlist[0],whichlist);
         if(exec_st < 0) {fprintf(stderr,"error : exec : which\n"); exit(-1);}
     }
-    else{
+    else if(status > 0){
         int temp_in = dup(0);
         if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
         dup2_st = dup2(fdpipe[0],0);
@@ -311,6 +319,10 @@ int find_path(int i, char ***arglists){
         dup2_st = dup2(temp_in,0);
         if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
         close(temp_in);
+    }
+    else{
+	    fprintf(stderr,"error : fork failed\n");
+	    return -1;
     }
     
     return 0;
