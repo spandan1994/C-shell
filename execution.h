@@ -16,9 +16,9 @@ void signal_ignore(void);
 
 void signal_default(void);
 
-int execution(PIPE_LINE *cmd_seq);
+int execution(PIPE_LINE *cmd_seq, list *process_list);
 
-int exec_wrapper(PIPE_LINE *cmd_seq);
+int exec_wrapper(PIPE_LINE *cmd_seq, list *process_list);
 
 int find_path(int i, char ***arglists);
 

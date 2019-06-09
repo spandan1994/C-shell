@@ -2,19 +2,63 @@
 #include "builtin.h"
 
 //not yet fullproof, needs checking----------------------------------------------------------------
-int builtin_fg1(const char *path_name)
+
+int search_env(char *command){
+    int status,pipe_st,dup2_st,exec_st,wait_st,wstatus;
+    int fdpipe[2];
+    char **whichlist = (char **)malloc(3*sizeof(char *));
+    whichlist[0] = "/usr/bin/which";
+    whichlist[2] = NULL;
+    
+    whichlist[1] = command;
+    pipe_st = pipe(fdpipe);
+    if(pipe_st < 0) {fprintf(stderr,"error : pipe\n"); return -1;}
+    status = fork();
+    if(status == 0){
+        dup2_st = dup2(fdpipe[1],1);
+        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); exit(-1);}
+        close(fdpipe[0]);
+        close(fdpipe[1]);
+        exec_st = execv(whichlist[0],whichlist);
+        if(exec_st < 0) {fprintf(stderr,"error : exec : which\n"); exit(-1);}
+    }
+    else{
+        int temp_in = dup(0);
+        if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
+        dup2_st = dup2(fdpipe[0],0);
+        close(fdpipe[0]);
+        close(fdpipe[1]);
+        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
+        wait_st = waitpid(-1,&wstatus,0);
+        if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
+        if(WEXITSTATUS(wstatus) == -1) return -1;
+        scanf("%s",command);
+        dup2_st = dup2(temp_in,0);
+        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
+        close(temp_in);
+    }
+    
+    return 0;
+}
+
+int builtin_fg1(char *path_name, list *process_list)
 {
 
     if(strcmp(path_name,"--help") == 0){
-        printf("Synopsis : fg pid\n");
+        printf("Synopsis : fg pname\n");
         printf("           fg --help\n\n");
-        printf("Description :\nfg brings the process group of the process specified by pid to the foreground.\n\n");
+        printf("Description :\nfg brings the process group of the process pname to the foreground.\n\n");
         printf("Options :\n");
         printf("        --help : prints this help and exits\n");
 	return 0;
     }
-    else if(atoi(path_name) > 0){
-	pid_t pgid = getpgid(atoi(path_name));
+    else{
+	if(search_env(path_name) < 0) {fprintf(stderr,"error : environment search\n"); return -1;}
+	//printf("%s\n",path_name);  //check
+	int process_id = Search_by_name(process_list, path_name);
+	if(process_id < 0) {fprintf(stderr,"error : no such process\n"); return 0;}
+	pid_t pgid = getpgid( process_id );
+	//printf("%d\n",pgid);
 	if(pgid < 0) {fprintf(stderr,"error : getpgid\n"); return(-1);}
 	pid_t shell_GID = getpgid(0);
 	struct termios term_in;
@@ -22,23 +66,20 @@ int builtin_fg1(const char *path_name)
 	signal (SIGTTOU, SIG_IGN);
 	signal (SIGTSTP, SIG_IGN);
 	tcsetpgrp(STDIN_FILENO,pgid);
-	if(kill( -(atoi(path_name)) , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
+	if(kill( -pgid , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
 
 	//restore shell------------------------------------------
-	if(waitpid(atoi(path_name),NULL,0) < 0) {fprintf(stderr,"error : wait\n"); return(-1);}
+	if(waitpid( pgid , NULL , 0 ) < 0) {fprintf(stderr,"error : wait\n"); return(-1);}
 	tcsetpgrp(STDIN_FILENO,shell_GID);
 	tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);
 	//-------------------------------------------------------
 	return 0;
     }
-    //strcpy(PWD,path_name);
-    printf("pid not valid\n");
-    return 0;
 }
 
-int fg_wrapper(const char *path_name)
+int fg_wrapper(char *path_name, list *process_list)
 {
-	if(builtin_fg1(path_name) < 0) fprintf(stderr,"error : fg\n");
+	if(builtin_fg1(path_name, process_list) < 0) fprintf(stderr,"error : fg\n");
 	signal (SIGTTOU, SIG_DFL);
 	signal (SIGTSTP, SIG_DFL);
 	return 0;

@@ -1,19 +1,12 @@
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <signal.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+
+#include "process_list.h"
 
 #ifndef BUILTIN_H
 #define BUILTIN_H
 
-int builtin_fg1(const char *path_name);
+int builtin_fg1(char *path_name, list *process_list);
+
+int fg_wrapper(char *path_name, list *process_list);
 
 int builtin_setenv(const char **argv, const char *in_fname, const char *out_fname);
 

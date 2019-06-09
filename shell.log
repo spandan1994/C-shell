@@ -2,24 +2,35 @@ user authenticated
 command: ls 
 command: less 
 input stdin output stdout backopt 0
+command: fg ls 
+input stdin output stdout backopt 1
 command: ps 
 input stdin output stdout backopt 1
-command: fg 12590 
+command: fg less 
 input stdin output stdout backopt 1
+command: fg less 
+input stdin output stdout backopt 1
+command: vim todo 
+input stdin output stdout backopt 0
+command: fg vim 
+input stdin output stdout backopt 1
+command: ps 
+input stdin output stdout backopt 1
+command: fg vim 
+input stdin output stdout backopt 1
+command: vim todo 
+input execution.h output tags backopt 1
 command: vim todo 
 input stdin output stdout backopt 1
 command: gedit tags 
 input stdin output stdout backopt 0
-command: ls -al 
-command: less 
+command: ps 
 input stdin output stdout backopt 1
 command: ps 
 input stdin output stdout backopt 1
-command: fg --help 
+command: ls 
 input stdin output stdout backopt 1
-command: fg -help 
-input stdin output stdout backopt 1
-command: fg 12560 
-input stdin output stdout backopt 1
+command: ls 
+input stdin output stdout backopt 0
 command: ps 
 input stdin output stdout backopt 1

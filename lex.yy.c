@@ -484,6 +484,7 @@ enum {
 PIPE_LINE command_seq; //spandan
 int exec_st = 0; //spandan (for checking exec status)
 siginfo_t process_info; //spandan (for retrieving info of children)
+list *process_list; //spandan (for storing info about background processes)
 
 char* commands[MAX_COMMANDS_NO][MAX_ARGS_NO];
 char* input_fname = NULL;
@@ -506,8 +507,8 @@ static struct pam_conv conv =
 };
 
 
-#line 510 "lex.yy.c"
 #line 511 "lex.yy.c"
+#line 512 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -724,10 +725,10 @@ YY_DECL
 		}
 
 	{
-#line 69 "myshell.l"
+#line 70 "myshell.l"
 
 
-#line 731 "lex.yy.c"
+#line 732 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -787,12 +788,12 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 71 "myshell.l"
+#line 72 "myshell.l"
 ; 		//ignore
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 73 "myshell.l"
+#line 74 "myshell.l"
 {
 				switch(state)
 				{
@@ -822,26 +823,26 @@ YY_RULE_SETUP
 			}
 	YY_BREAK
 case 3:
-#line 102 "myshell.l"
+#line 103 "myshell.l"
 case 4:
 YY_RULE_SETUP
-#line 102 "myshell.l"
+#line 103 "myshell.l"
 {
 				state = OREDIR; 
 			}
 	YY_BREAK
 case 5:
-#line 107 "myshell.l"
+#line 108 "myshell.l"
 case 6:
 YY_RULE_SETUP
-#line 107 "myshell.l"
+#line 108 "myshell.l"
 {
 				state = IREDIR; 
 			}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 111 "myshell.l"
+#line 112 "myshell.l"
 {
 				command_no++;
 				state = COMMAND;
@@ -849,7 +850,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 116 "myshell.l"
+#line 117 "myshell.l"
 {
 				if(state = BACKGROUND_OPT)
 					{
@@ -859,10 +860,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 123 "myshell.l"
+#line 124 "myshell.l"
 ECHO;
 	YY_BREAK
-#line 866 "lex.yy.c"
+#line 867 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1867,7 +1868,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 123 "myshell.l"
+#line 124 "myshell.l"
 
 
 int yywrap()
@@ -2047,6 +2048,7 @@ int main(int argc, char** argv)
 	system("clear");
 
 	//signal_ignore();  //ignore all signals except SIGINT
+	process_list = Createlist(); //for storing background process info	
 
 	for(;;)
 	{
@@ -2054,18 +2056,36 @@ int main(int argc, char** argv)
 		sprintf(prompt, "%s @ %s >>> ", user, cwd);
 
 //check for background processes--------------------------------------------------------------------------------------------
-		process_info.si_pid = 0;
-		waitid(P_ALL,0,&process_info,WEXITED|WSTOPPED|WCONTINUED|WNOHANG);
-		if(process_info.si_pid > 0)
+		node *temp = process_list->head;
+		while(temp != NULL)
 		{
-			if(process_info.si_code == CLD_STOPPED) printf("%d stopped\n",process_info.si_pid);
-			else if(process_info.si_code == CLD_EXITED) printf("%d exited\n",process_info.si_pid);
-			else if(process_info.si_code == CLD_KILLED) printf("%d killed\n",process_info.si_pid);
-			else if(process_info.si_code == CLD_DUMPED) printf("%d core dumped\n",process_info.si_pid);
-			else if(process_info.si_code == CLD_TRAPPED) printf("%d trapped\n",process_info.si_pid);
-			else if(process_info.si_code == CLD_CONTINUED) printf("%d continued\n",process_info.si_pid);
-			else printf("abnormal behaviour of child %d\n",exec_st);
+			process_info.si_pid = 0;
+			waitid(P_PID,temp->p_pid,&process_info,WEXITED|WSTOPPED|WCONTINUED|WNOHANG);
+			if(process_info.si_pid > 0)
+			{
+				if(process_info.si_code == CLD_STOPPED) printf("%d stopped\n",process_info.si_pid);
+				else if(process_info.si_code == CLD_EXITED)
+				{
+					printf("%d exited\n",process_info.si_pid);
+					temp->status = 1;
+				}
+				else if(process_info.si_code == CLD_KILLED)
+				{
+					printf("%d killed\n",process_info.si_pid);
+					temp->status = 1;
+				}
+				else if(process_info.si_code == CLD_DUMPED) 
+				{
+					printf("%d core dumped\n",process_info.si_pid);
+					temp->status = 1;
+				}
+				else if(process_info.si_code == CLD_TRAPPED) printf("%d trapped\n",process_info.si_pid);
+				else if(process_info.si_code == CLD_CONTINUED) printf("%d continued\n",process_info.si_pid);
+				else printf("abnormal behaviour of child %d\n",exec_st);
+			}
+			temp = temp->next;
 		}
+		Update(process_list);
 //background processes---------------------------------------------------------------------------------------------------------------
 
 		if((buf = readline(prompt)) != NULL )
@@ -2089,7 +2109,7 @@ int main(int argc, char** argv)
 					if(find_st < 0) fprintf(logfile,"error : find_path\n");
 				}
 
-				exec_st = exec_wrapper(&command_seq);
+				exec_st = exec_wrapper(&command_seq, process_list);
         			if(exec_st < 0) fprintf(logfile,"error : exec_wrapper\n");
 			
 				free_exec_env();

@@ -51,7 +51,7 @@ int my_file_dup(char *fname, int mode, int fd){ //opens a file with name fname a
 
 
 
-int execution(PIPE_LINE *cmd_seq){
+int execution(PIPE_LINE *cmd_seq, list *process_list){
     static int i = 1;
     //fprintf(stderr,"value of i = %d\n",i);
     int dup2_st, exec_st, wait_st, pipe_st, status, wstatus, cd_st, env_st;
@@ -83,7 +83,7 @@ int execution(PIPE_LINE *cmd_seq){
 		if(strcmp(cmd_seq->arglists[0][0],"fg") == 0){
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : fg : no argument. Type fg --help\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : fg : excess arguments\n"); return -1;}
-		    env_st = fg_wrapper(cmd_seq->arglists[0][1]);
+		    env_st = fg_wrapper(cmd_seq->arglists[0][1], process_list);
 		    if(env_st < 0) {fprintf(stderr,"error : fg\n"); return -1;}
 		    return 0;
 		}   //not yet fullproof. check into it.
@@ -93,7 +93,7 @@ int execution(PIPE_LINE *cmd_seq){
 		    return 0;
 		}
 		//builtin--------------------------------------------------------------------------------------------------------
-	    }
+	   }
         status = fork();
         if(status == 0){
 	    //signal_default();  //default signaling in the children
@@ -135,12 +135,18 @@ int execution(PIPE_LINE *cmd_seq){
 			exit(0);
 		    }
 		    //builtin--------------------------------------------------------------
-	     }
+	    }
 
             exec_st = execv(cmd_seq->arglists[0][0],cmd_seq->arglists[0]);
             if(exec_st < 0) {fprintf(stderr,"error : exec : %s\n",cmd_seq->arglists[0][0]); exit(-1);}
         }
         else{
+	    if(cmd_seq->background == 0)
+	    {
+		node *new = Makenode(cmd_seq->arglists[0][0],status);
+		pushfront(process_list,new);
+	    }
+
             if(cmd_seq->background){
                 wait_st = waitpid(status,&wstatus,0);
 		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
@@ -218,6 +224,11 @@ int execution(PIPE_LINE *cmd_seq){
             }
         }
         else{
+	    if(cmd_seq->background == 0)
+	    {
+		node *new = Makenode(cmd_seq->arglists[(cmd_seq->num_cmds) - i][0],status);
+		pushfront(process_list,new);
+	    }
             /*temp_out = dup(1);
             if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}*/
 	    if(i == 1) new_gid = status;  //all processes in the pipeline should have same gid
@@ -227,7 +238,7 @@ int execution(PIPE_LINE *cmd_seq){
             close(fdpipe[0]);
             close(fdpipe[1]);
             i++;
-            exec_st = execution(cmd_seq);
+            exec_st = execution(cmd_seq, process_list);
             if(exec_st < 0) return -1;
             //i--;
 
@@ -249,12 +260,12 @@ int execution(PIPE_LINE *cmd_seq){
     }
 }
 
-int exec_wrapper(PIPE_LINE *cmd_seq){
+int exec_wrapper(PIPE_LINE *cmd_seq, list *process_list){
     int temp_in = dup(0);
     if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
     int temp_out = dup(1);
     if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}
-    int exec_st = execution(cmd_seq);  
+    int exec_st = execution(cmd_seq, process_list);  
     if(exec_st < 0) {fprintf(stderr,"error : execution\n"); return -1;}
     int dup2_st = dup2(temp_in,0);
     if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
