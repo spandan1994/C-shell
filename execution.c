@@ -312,7 +312,7 @@ int find_path(int i, char ***arglists){
         close(fdpipe[0]);
         close(fdpipe[1]);
         if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        wait_st = waitpid(-1,&wstatus,0);
+        wait_st = waitpid(status,&wstatus,0);
         if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
         if(WEXITSTATUS(wstatus) == -1) return -1;
         scanf("%s",arglists[i][0]);
