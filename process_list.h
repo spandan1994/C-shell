@@ -18,6 +18,7 @@ typedef struct node
         char p_name[20];
         pid_t p_pid;
 	int status;
+	int job_id;
         struct node *next;
 }node;
 
@@ -28,7 +29,7 @@ typedef struct list
 
 list *Createlist(void);
 
-node *Makenode(char *name, pid_t pid);
+node *Makenode(char *name, pid_t pid, int job_id);
 
 void pushfront(list *l, node *n);
 

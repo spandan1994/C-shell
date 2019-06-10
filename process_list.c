@@ -9,12 +9,13 @@ list *Createlist(void)
 	return newlist;
 }
 
-node *Makenode(char *name, pid_t pid)
+node *Makenode(char *name, pid_t pid, int jid)
 {
 	node *newnode = (node *)malloc(sizeof(node));
 	strcpy(newnode->p_name,name);
 	newnode->status = 0;
 	newnode->p_pid = pid;
+	newnode->job_id = jid;
 	newnode->next = NULL;
 	return newnode;
 }

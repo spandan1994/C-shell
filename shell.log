@@ -1,14 +1,22 @@
 user authenticated
+command: ls 
+input stdin output stdout backopt 1
+command: fgh 
+input stdin output stdout backopt 1
 command: vim todo 
 input stdin output stdout backopt 0
-command: ps 
-input stdin output stdout backopt 1
-command: fg vim 
-input stdin output stdout backopt 1
 command: ls 
 command: less 
 input stdin output stdout backopt 0
-command: ps 
+command: jobs 
 input stdin output stdout backopt 1
-command: fg ls 
+command: ls 
+input stdin output stdout backopt 1
+command: cat execution.h 
+input stdin output stdout backopt 1
+command: fg vim 
+input stdin output stdout backopt 1
+command: fg less 
+input stdin output stdout backopt 1
+command: jobs 
 input stdin output stdout backopt 1

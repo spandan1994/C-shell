@@ -2024,6 +2024,17 @@ void free_exec_env(void)
 	return;
 }
 
+void sigint_handler(int signo)
+{
+	fprintf(stderr,"exit by typing 'exit'\n");
+}
+
+int custom_exit(int count, int key)
+{
+	exit(0);
+	fprintf(stderr, "error : cannot exit\n");
+	return -1; 
+}
 
 
 int main(int argc, char** argv) 
@@ -2041,16 +2052,23 @@ int main(int argc, char** argv)
 	scanf("%20s", user);
 	authenticate_user(user);
     
-	//rl_bind_key('\t', rl_insert);		
+	//rl_bind_key('\t', rl_insert);
+	rl_bind_keyseq("exit",custom_exit);
 	char* buf;
 	//char* input;
 
 	system("clear");
 
-	//signal_ignore();  //ignore all signals except SIGINT
+//signal_ignore------------------------------------------------------------
+	signal(SIGINT, sigint_handler);
+	signal(SIGTSTP, SIG_IGN);
+	signal(SIGTTOU, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
+//signal_ignore------------------------------------------------------------
+		
 	process_list = Createlist(); //for storing background process info	
 
-	for(;;)
+	for(int job = 1 ; ;)
 	{
 		getcwd(cwd,  sizeof(cwd)); 
 		sprintf(prompt, "%s @ %s >>> ", user, cwd);
@@ -2100,6 +2118,7 @@ int main(int argc, char** argv)
 				free(buf);
 				print_command_storage();
 				prepare_exec_env();
+				command_seq.job_id = job;  //job id for this job
 				print_exec_env();
 
 
@@ -2112,6 +2131,7 @@ int main(int argc, char** argv)
 				exec_st = exec_wrapper(&command_seq, process_list);
         			if(exec_st < 0) fprintf(logfile,"error : exec_wrapper\n");
 			
+				if(command_seq.background == 0) job = job + 1;  //id for next job
 				free_exec_env();
 			}
 			

@@ -5,27 +5,6 @@
 
 //utilities--------------------------------------------------------------------------------------------------------
 
-void signal_ignore(void)
-{
-	signal (SIGINT, SIG_IGN);
-	signal (SIGQUIT, SIG_IGN);
-	signal (SIGTSTP, SIG_IGN);
-	signal (SIGTTIN, SIG_IGN);
-	signal (SIGTTOU, SIG_IGN);
-	signal (SIGCHLD, SIG_IGN);
-}
-
-void signal_default(void)
-{
-	signal (SIGINT, SIG_DFL);
-        signal (SIGQUIT, SIG_DFL);
-        signal (SIGTSTP, SIG_DFL);
-        signal (SIGTTIN, SIG_DFL);
-        signal (SIGTTOU, SIG_DFL);
-        signal (SIGCHLD, SIG_DFL);
-}
-
-
 int my_file_dup(char *fname, int mode, int fd){ //opens a file with name fname and given mode and dup2 it at fd
     int new_fd, dup2_st;
     if(mode == 0){
@@ -47,24 +26,12 @@ int my_file_dup(char *fname, int mode, int fd){ //opens a file with name fname a
     return 0;
 }
 
-//-----------------------------------------------------------------------------------------------------------------
+int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
+{
+	int cd_st, env_st;
 
-
-
-int execution(PIPE_LINE *cmd_seq, list *process_list){
-    static int i = 1;
-    //fprintf(stderr,"value of i = %d\n",i);
-    int dup2_st, exec_st, wait_st, pipe_st, status, wstatus, cd_st, env_st;
-    static int new_gid = 0;  //new_gid for background pipeline
-    //fprintf(stderr,"value of i = %d\n",new_gid);
-    //int temp_out = 0;
-    if(i > cmd_seq->num_cmds) {i = 1; new_gid = 0; return 0;}
-
-//there is a single command------------------------------------------------------------------------------------------------
-    if(cmd_seq->num_cmds == 1){
-	    if(cmd_seq->background)  //first check background option
-	    {
-		//if the command is a builtin directly run it no need to fork, you need to do input/output redirection as well
+	if(cases == 0)
+	{
 		if(strcmp(cmd_seq->arglists[0][0],"cd") == 0){
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : cd : no destination given\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : cd : excess arguments\n"); return -1;}
@@ -72,6 +39,17 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 		    if(cd_st < 0) {fprintf(stderr,"error : cd\n"); return -1;}
 		    return 0;
 		}
+		if(strcmp(cmd_seq->arglists[0][0],"jobs") == 0){
+                    if(cmd_seq->arglists[0][1] == NULL){
+			env_st = jobs_wrapper("0",process_list,cmd_seq->in_fname,cmd_seq->out_fname);
+			if(env_st < 0) {fprintf(stderr,"error : jobs\n"); return -1;}
+		    }
+		    else if( strcmp(cmd_seq->arglists[0][1],"--help") == 0 ) 
+			   jobs_wrapper(cmd_seq->arglists[0][1],process_list,cmd_seq->in_fname,cmd_seq->out_fname);
+                    
+		    else {fprintf(stderr,"error : wrong argument, check jobs --help\n"); return -1;}
+                    return 0;
+                }
 		if(strcmp(cmd_seq->arglists[0][0],"unsetenv") == 0){
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : unsetenv : no environment variable given\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : unsetenv : excess arguments\n"); return -1;}
@@ -83,20 +61,97 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 		if(strcmp(cmd_seq->arglists[0][0],"fg") == 0){
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : fg : no argument. Type fg --help\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : fg : excess arguments\n"); return -1;}
-		    env_st = fg_wrapper(cmd_seq->arglists[0][1], process_list);
+		    env_st = builtin_fg1(cmd_seq->arglists[0][1], process_list);
 		    if(env_st < 0) {fprintf(stderr,"error : fg\n"); return -1;}
 		    return 0;
 		}   //not yet fullproof. check into it.
+		
+		if(strcmp(cmd_seq->arglists[0][0],"bg") == 0){
+		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : bg : no argument. Type bg --help\n"); return -1;}
+		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : bg : excess arguments\n"); return -1;}
+		    env_st = builtin_bg(cmd_seq->arglists[0][1], process_list);
+		    if(env_st < 0) {fprintf(stderr,"error : bg\n"); return -1;}
+		    return 0;
+		}
 
 		if(strcmp(cmd_seq->arglists[0][0],"setenv") == 0){
 		    if(setenv_wrapper((const char**)cmd_seq->arglists[0],cmd_seq->in_fname,cmd_seq->out_fname) == -1) return -1;
 		    return 0;
 		}
+	}
+
+	else
+	{
+	    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"cd") == 0){
+		if(cmd_seq->arglists[cmd_seq->num_cmds-i][1] == NULL) {fprintf(stderr,"error : cd : no destination given\n"); return(-1);}
+		if(cmd_seq->arglists[cmd_seq->num_cmds-i][2] != NULL) {fprintf(stderr,"error : cd : excess arguments\n"); return(-1);}
+		cd_st = cd_wrapper1(cmd_seq->arglists[cmd_seq->num_cmds-i][1]);
+		if(cd_st < 0) {fprintf(stderr,"error : cd\n"); return(-1);}
+		return(0);
+	    }
+	    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"jobs") == 0){
+		    if(cmd_seq->arglists[cmd_seq->num_cmds-i][1] == NULL){
+			env_st = builtin_jobs1("0",process_list);
+			if(env_st < 0) {fprintf(stderr,"error : jobs\n"); return(-1);}
+		    }
+		    else if( strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][1],"--help") == 0 )
+			   builtin_jobs1(cmd_seq->arglists[cmd_seq->num_cmds-i][1],process_list);
+
+		    else {fprintf(stderr,"error : wrong argument, check jobs --help\n"); return(-1);}
+		    return(0);
+	    }
+
+	    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"unsetenv") == 0){
+		if(cmd_seq->arglists[cmd_seq->num_cmds-i][1] == NULL) {fprintf(stderr,"error : unsetenv : no environment variable given\n"); return(-1);}
+		if(cmd_seq->arglists[cmd_seq->num_cmds-i][2] != NULL) {fprintf(stderr,"error : unsetenv : excess arguments\n"); return(-1);}
+		env_st = builtin_unsetenv1(cmd_seq->arglists[cmd_seq->num_cmds-i][1]);
+		if(env_st < 0) {fprintf(stderr,"error : unsetenv\n"); return(-1);}
+		return(0);
+	    }
+	    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"fg") == 0){
+		fprintf(stderr,"error : fg : called from background process\n");
+		return(0);
+	    }
+
+	    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"bg") == 0){
+		fprintf(stderr,"error : bg : called from background process\n");
+		return(0);
+	    }
+	    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"setenv") == 0){
+		if(setenv_wrapper((const char**)cmd_seq->arglists[cmd_seq->num_cmds-i],cmd_seq->in_fname,cmd_seq->out_fname) == -1) return(-1);
+		return(0);
+	    }
+	}
+
+	return 2;
+
+}
+
+//-----------------------------------------------------------------------------------------------------------------
+
+
+
+int execution(PIPE_LINE *cmd_seq, list *process_list){
+    static int i = 1;
+    //fprintf(stderr,"value of i = %d\n",i);
+    int dup2_st, exec_st, wait_st, pipe_st, status, wstatus, builtin_st;
+    static int new_gid = 0;  //new_gid for background pipeline
+    //fprintf(stderr,"value of i = %d\n",new_gid);
+    //int temp_out = 0;
+    if(i > cmd_seq->num_cmds) {i = 1; new_gid = 0; return 0;}
+
+//there is a single command------------------------------------------------------------------------------------------------
+    if(cmd_seq->num_cmds == 1){
+	    if(cmd_seq->background)  //first check background option
+	    {
+		//if the command is a builtin directly run it no need to fork, you need to do input/output redirection as well
+		builtin_st = call_builtin(cmd_seq, process_list, i, 0);
+		if(builtin_st == 0 || builtin_st == -1) return builtin_st;
 		//builtin--------------------------------------------------------------------------------------------------------
-	   }
+	    }
         status = fork();
         if(status == 0){
-	    //signal_default();  //default signaling in the children
+	    signal_default();  //default signaling in the children
 	    //run in background--------------------------
 	    if(cmd_seq->background == 0)
 	    {
@@ -112,28 +167,8 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 	    if(cmd_seq->background == 0)  //check if background is zero
 	    {
 		    //if command is a builtin run it here, do not execute, finally exit
-		    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"cd") == 0){
-			if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : cd : no destination given\n"); exit(-1);}
-			if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : cd : excess arguments\n"); exit(-1);}
-			cd_st = cd_wrapper1(cmd_seq->arglists[i][1]);
-			if(cd_st < 0) {fprintf(stderr,"error : cd\n"); exit(-1);}
-			exit(0);
-		    }
-		    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"unsetenv") == 0){
-			if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : unsetenv : no environment variable given\n"); exit(-1);}
-			if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : unsetenv : excess arguments\n"); exit(-1);}
-			env_st = builtin_unsetenv1(cmd_seq->arglists[i][1]);
-			if(env_st < 0) {fprintf(stderr,"error : unsetenv\n"); exit(-1);}
-			exit(0);
-		    }
-		    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"fg") == 0){
-			fprintf(stderr,"error : fg : called from background process\n");
-			exit(0);
-		    }
-		    if(strcmp(cmd_seq->arglists[0][0],"setenv") == 0){
-			if(setenv_wrapper((const char**)cmd_seq->arglists[0],cmd_seq->in_fname,cmd_seq->out_fname) == -1) exit(-1);
-			exit(0);
-		    }
+		    builtin_st = call_builtin(cmd_seq, process_list, i, 1);
+		    if(builtin_st == 0 || builtin_st == -1) exit(builtin_st);
 		    //builtin--------------------------------------------------------------
 	    }
 
@@ -143,7 +178,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
         else if(status > 0){
 	    if(cmd_seq->background == 0)
 	    {
-		node *new = Makenode(cmd_seq->arglists[0][0],status);
+		node *new = Makenode(cmd_seq->arglists[0][0],status,cmd_seq->job_id);
 		pushfront(process_list,new);
 	    }
 
@@ -172,7 +207,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 
         status = fork();
         if(status == 0){
-	    //signal_default();  //default signaling in the children
+	    signal_default();  //default signaling in the children
 	    //run in background----------------------------------------------
 	    if(cmd_seq->background == 0)
 	    {
@@ -198,28 +233,8 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
                 }
             }
             //if command is a builtin run it here, do not execute, finally exit
-            if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"cd") == 0){
-                if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : cd : no destination given\n"); exit(-1);}
-                if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : cd : excess arguments\n"); exit(-1);}
-                cd_st = cd_wrapper1(cmd_seq->arglists[i][1]);
-                if(cd_st < 0) {fprintf(stderr,"error : cd\n"); exit(-1);}
-                exit(0);
-            }
-            if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"unsetenv") == 0){
-                if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : unsetenv : no environment variable given\n"); exit(-1);}
-                if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : unsetenv : excess arguments\n"); exit(-1);}
-                env_st = builtin_unsetenv1(cmd_seq->arglists[i][1]);
-                if(env_st < 0) {fprintf(stderr,"error : unsetenv\n"); exit(-1);}
-                exit(0);
-            }
-            if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"fg") == 0){
-		fprintf(stderr,"error : fg : not called from main process\n");
-		exit(0);
-            }
-            if(strcmp(cmd_seq->arglists[0][0],"setenv") == 0){
-                if(setenv_wrapper((const char**)cmd_seq->arglists[0],cmd_seq->in_fname,cmd_seq->out_fname) == -1) exit(-1);
-                exit(0);
-            }
+	    builtin_st = call_builtin(cmd_seq, process_list, i, 1);
+	    if(builtin_st == 0 || builtin_st == -1) exit(builtin_st);
             //builtin--------------------------------------------------------------
             exec_st = execv(cmd_seq->arglists[cmd_seq->num_cmds-i][0],cmd_seq->arglists[cmd_seq->num_cmds-i]);
             if(exec_st < 0){
@@ -230,7 +245,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
         else if(status > 0){
 	    if(cmd_seq->background == 0)
 	    {
-		node *new = Makenode(cmd_seq->arglists[(cmd_seq->num_cmds) - i][0],status);
+		node *new = Makenode(cmd_seq->arglists[(cmd_seq->num_cmds) - i][0],status,cmd_seq->job_id);
 		pushfront(process_list,new);
 	    }
             /*temp_out = dup(1);
@@ -241,7 +256,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
             if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
             close(fdpipe[0]);
             close(fdpipe[1]);
-            i++;
+            i = i + 1;
             exec_st = execution(cmd_seq, process_list);
             if(exec_st < 0) return -1;
             //i--;
@@ -298,6 +313,7 @@ int find_path(int i, char ***arglists){
     if(pipe_st < 0) {fprintf(stderr,"error : pipe\n"); return -1;}
     status = fork();
     if(status == 0){
+	signal_default();  //default signaling in children
         dup2_st = dup2(fdpipe[1],1);
         if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); exit(-1);}
         close(fdpipe[0]);

@@ -1,6 +1,28 @@
 
 #include "builtin.h"
 
+//utilities---------------------------------------------------------------------------
+void signal_ignore(void)
+{
+        signal (SIGINT, SIG_IGN);
+        signal (SIGQUIT, SIG_IGN);
+        signal (SIGTSTP, SIG_IGN);
+        signal (SIGTTIN, SIG_IGN);
+        signal (SIGTTOU, SIG_IGN);
+        signal (SIGCHLD, SIG_IGN);
+}
+
+void signal_default(void)
+{
+        signal (SIGINT, SIG_DFL);
+        signal (SIGQUIT, SIG_DFL);
+        signal (SIGTSTP, SIG_DFL);
+        signal (SIGTTIN, SIG_DFL);
+        signal (SIGTTOU, SIG_DFL);
+        signal (SIGCHLD, SIG_DFL);
+}
+//utilities_end-----------------------------------------------------------------------
+
 //not yet fullproof, needs checking----------------------------------------------------------------
 
 int search_env(char *command){
@@ -15,6 +37,7 @@ int search_env(char *command){
     if(pipe_st < 0) {fprintf(stderr,"error : pipe\n"); return -1;}
     status = fork();
     if(status == 0){
+	signal_default();  //default signaling in children
         dup2_st = dup2(fdpipe[1],1);
         if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); exit(-1);}
         close(fdpipe[0]);
@@ -45,6 +68,31 @@ int search_env(char *command){
     return 0;
 }
 
+
+int builtin_bg(char *path_name, list *process_list)
+{
+
+    if(strcmp(path_name,"--help") == 0){
+        printf("Synopsis : bg pname\n");
+        printf("           bg --help\n\n");
+        printf("Description :\nbg sends the background process group of the process pname a SIGCONT signal.\n\n");
+        printf("Options :\n");
+        printf("        --help : prints this help and exits\n");
+	return 0;
+    }
+    else{
+	if(search_env(path_name) < 0) {fprintf(stderr,"error : environment search\n"); return -1;}
+	//printf("%s\n",path_name);  //check
+	int process_id = Search_by_name(process_list, path_name);
+	if(process_id < 0) {fprintf(stderr,"error : no such process\n"); return 0;}
+	pid_t pgid = getpgid( process_id );
+	if(pgid < 0) {fprintf(stderr,"error : getpgid\n"); return(-1);}
+	if(kill( -pgid , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
+
+	return 0;
+    }
+}
+
 int builtin_fg1(char *path_name, list *process_list)
 {
 
@@ -67,8 +115,8 @@ int builtin_fg1(char *path_name, list *process_list)
 	pid_t shell_GID = getpgid(0);
 	struct termios term_in;
 	tcgetattr(STDIN_FILENO,&term_in);
-	signal (SIGTTOU, SIG_IGN);
-	signal (SIGTSTP, SIG_IGN);
+	//signal (SIGTTOU, SIG_IGN);
+	//signal (SIGTSTP, SIG_IGN);
 	tcsetpgrp(STDIN_FILENO,pgid);
 	if(kill( -pgid , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
 
@@ -84,8 +132,8 @@ int builtin_fg1(char *path_name, list *process_list)
 int fg_wrapper(char *path_name, list *process_list)
 {
 	if(builtin_fg1(path_name, process_list) < 0) fprintf(stderr,"error : fg\n");
-	signal (SIGTTOU, SIG_DFL);
-	signal (SIGTSTP, SIG_DFL);
+	//signal (SIGTTOU, SIG_DFL);
+	//signal (SIGTSTP, SIG_DFL);
 	return 0;
 }
 //---------------------------------------------------------------------------------------------------
@@ -176,6 +224,129 @@ int setenv_wrapper(const char **argv, const char *in_fname, const char *out_fnam
     if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}
     int env_st = builtin_setenv(argv, in_fname, out_fname);
     if(env_st < 0) {fprintf(stderr,"error : builtin_setenv\n"); return -1;}
+    int dup2_st = dup2(temp_in,0);
+    if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
+    dup2_st = dup2(temp_out,1);
+    if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
+    close(temp_in);
+    close(temp_out);
+
+    return 0;
+}
+
+int builtin_jobs(char *path_name,list *process_list, const char *in_fname, const char *out_fname){
+    int dup2_st;
+
+    if(strcmp(in_fname,"stdin") != 0){
+        int curr_in = open(in_fname,O_RDONLY);
+        if(curr_in < 0) {fprintf(stderr,"error : open\n"); return -1;}
+        dup2_st = dup2(curr_in,0);
+        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
+        close(curr_in);
+    }
+    if(strcmp(out_fname,"stdout") != 0){
+        int curr_out = open(out_fname,O_CREAT|O_WRONLY|O_TRUNC,00600);
+        if(curr_out < 0) {fprintf(stderr,"error : open\n"); return -1;}
+        dup2_st = dup2(curr_out,1);
+        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
+        close(curr_out);
+    }
+    if(strcmp(path_name,"--help") == 0){
+        printf("Synopsis : jobs\n");
+        printf("           jobs --help\n\n");
+        printf("Description :\njobs shows all the existing background jobs.\n\n");
+        printf("Options :\n");
+        printf("        --help : prints this help and exits\n");
+    }
+    else{
+        node *temp = process_list->head;
+	int curr_state = 0, curr_job;
+	while(temp != NULL)
+	{
+		if(curr_state == 0)
+		{
+			printf("%d ",temp->job_id);
+			curr_job = temp->job_id;
+			curr_state = 1;
+		}
+		else if(curr_state == 1)
+		{
+			printf("%s ",temp->p_name);
+			temp = temp->next;
+			curr_state = 2;
+		}
+		else
+		{
+			if(temp->job_id == curr_job)
+			{
+				printf("| %s",temp->p_name);
+				temp = temp->next;
+			}
+			else
+			{
+				printf("\n");
+				curr_state = 0;
+			}
+		}
+	}
+	printf("\n");
+    }
+    //strcpy(PWD,path_name);
+    return 0;
+}
+
+int builtin_jobs1(char *path_name,list *process_list){
+    if(strcmp(path_name,"--help") == 0){
+        printf("Synopsis : jobs\n");
+        printf("           jobs --help\n\n");
+        printf("Description :\njobs shows all the existing background jobs.\n\n");
+        printf("Options :\n");
+        printf("        --help : prints this help and exits\n");
+    }
+    else{
+        node *temp = process_list->head;
+	int curr_state = 0, curr_job;
+	while(temp != NULL)
+	{
+		if(curr_state == 0)
+		{
+			printf("%d ",temp->job_id);
+			curr_job = temp->job_id;
+			curr_state = 1;
+		}
+		else if(curr_state == 1)
+		{
+			printf("%s ",temp->p_name);
+			temp = temp->next;
+			curr_state = 2;
+		}
+		else
+		{
+			if(temp->job_id == curr_job)
+			{
+				printf("| %s",temp->p_name);
+				temp = temp->next;
+			}
+			else
+			{
+				printf("\n");
+				curr_state = 0;
+			}
+		}
+	}
+	printf("\n");
+    }
+    //strcpy(PWD,path_name);
+    return 0;
+}
+
+int jobs_wrapper(char *path_name,list *process_list, const char *in_fname, const char *out_fname){
+    int temp_in = dup(0);
+    if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
+    int temp_out = dup(1);
+    if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}
+    int env_st = builtin_jobs(path_name,process_list,in_fname,out_fname);
+    if(env_st < 0) {fprintf(stderr,"error : builtin_jobs\n"); return -1;}
     int dup2_st = dup2(temp_in,0);
     if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
     dup2_st = dup2(temp_out,1);

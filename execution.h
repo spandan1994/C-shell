@@ -10,11 +10,12 @@ typedef struct{
     char in_fname[20];
     char out_fname[20];
     int background;
+    int job_id;
 }PIPE_LINE;
 
-void signal_ignore(void);
+//void signal_ignore(void);
 
-void signal_default(void);
+//void signal_default(void);
 
 int execution(PIPE_LINE *cmd_seq, list *process_list);
 
