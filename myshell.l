@@ -36,6 +36,7 @@ enum {
 	OFILE,
 	BACKGROUND_OPT,
 	UNKNOWN
+	//EXIT
 }; 
 
 PIPE_LINE command_seq; //spandan
@@ -119,7 +120,7 @@ static struct pam_conv conv =
 					{
 						background_opt = 1;
 					}
-			}				
+			}
 
 %%
 
@@ -281,12 +282,12 @@ void sigint_handler(int signo)
 	fprintf(stderr,"exit by typing 'exit'\n");
 }
 
-int custom_exit(int count, int key)
+/*int custom_exit(int count, int key)
 {
-	exit(0);
-	fprintf(stderr, "error : cannot exit\n");
-	return -1; 
-}
+	state = EXIT;
+	//fprintf(stderr,"error : exit\n");
+	return 0;
+}*/
 
 
 int main(int argc, char** argv) 
@@ -305,7 +306,7 @@ int main(int argc, char** argv)
 	authenticate_user(user);
     
 	//rl_bind_key('\t', rl_insert);
-	rl_bind_keyseq("exit",custom_exit);
+	//rl_bind_keyseq("exit",custom_exit);
 	char* buf;
 	//char* input;
 
@@ -360,6 +361,7 @@ int main(int argc, char** argv)
 
 		if((buf = readline(prompt)) != NULL )
 		{
+			if( strcmp(buf,"exit") == 0 ) break;
 			if (strlen(buf) > 0) 
 			{
   				add_history(buf);
