@@ -36,7 +36,6 @@ enum {
 	OFILE,
 	BACKGROUND_OPT,
 	UNKNOWN
-	//EXIT
 }; 
 
 PIPE_LINE command_seq; //spandan
@@ -282,12 +281,27 @@ void sigint_handler(int signo)
 	fprintf(stderr,"exit by typing 'exit'\n");
 }
 
-/*int custom_exit(int count, int key)
+/*int custom_exit(const char *text, int state)
 {
-	state = EXIT;
-	//fprintf(stderr,"error : exit\n");
+	exit(0);
+	fprintf("stderr : exit\n");	
 	return 0;
 }*/
+
+void setup_rc(char *user)
+{
+	FILE *fp = fopen("shellrc","r");
+	int first_char;
+	fscanf(fp,"%c",&first_char);
+	if( first_char == 48 ) {fclose(fp); return;}
+	printf("Setting up rc file for once\n");
+	fclose(fp);
+	fp = fopen("shellrc","w");
+	fprintf(fp,"$include /etc/inputrc\n\n");
+	fprintf(fp,"set editing-mode emacs\n\n");
+	fprintf(fp,"~: \"/home/%s\"\n",user);
+	fclose(fp);
+}
 
 
 int main(int argc, char** argv) 
@@ -311,6 +325,11 @@ int main(int argc, char** argv)
 	//char* input;
 
 	system("clear");
+
+//path of inputrc file------------------------------------------------
+	setup_rc(user);
+	setenv("INPUTRC","./shellrc",1);
+//inputrc--------------------------------------------------------------
 
 //signal_ignore------------------------------------------------------------
 	signal(SIGINT, sigint_handler);

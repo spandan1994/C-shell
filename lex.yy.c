@@ -479,7 +479,6 @@ enum {
 	OFILE,
 	BACKGROUND_OPT,
 	UNKNOWN
-	//EXIT
 }; 
 
 PIPE_LINE command_seq; //spandan
@@ -508,8 +507,8 @@ static struct pam_conv conv =
 };
 
 
+#line 511 "lex.yy.c"
 #line 512 "lex.yy.c"
-#line 513 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -726,10 +725,10 @@ YY_DECL
 		}
 
 	{
-#line 71 "myshell.l"
+#line 70 "myshell.l"
 
 
-#line 733 "lex.yy.c"
+#line 732 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -789,12 +788,12 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 73 "myshell.l"
+#line 72 "myshell.l"
 ; 		//ignore
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 75 "myshell.l"
+#line 74 "myshell.l"
 {
 				switch(state)
 				{
@@ -824,26 +823,26 @@ YY_RULE_SETUP
 			}
 	YY_BREAK
 case 3:
-#line 104 "myshell.l"
+#line 103 "myshell.l"
 case 4:
 YY_RULE_SETUP
-#line 104 "myshell.l"
+#line 103 "myshell.l"
 {
 				state = OREDIR; 
 			}
 	YY_BREAK
 case 5:
-#line 109 "myshell.l"
+#line 108 "myshell.l"
 case 6:
 YY_RULE_SETUP
-#line 109 "myshell.l"
+#line 108 "myshell.l"
 {
 				state = IREDIR; 
 			}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 113 "myshell.l"
+#line 112 "myshell.l"
 {
 				command_no++;
 				state = COMMAND;
@@ -851,7 +850,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 118 "myshell.l"
+#line 117 "myshell.l"
 {
 				if(state = BACKGROUND_OPT)
 					{
@@ -861,10 +860,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 125 "myshell.l"
+#line 124 "myshell.l"
 ECHO;
 	YY_BREAK
-#line 868 "lex.yy.c"
+#line 867 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1869,7 +1868,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 125 "myshell.l"
+#line 124 "myshell.l"
 
 
 int yywrap()
@@ -2030,12 +2029,27 @@ void sigint_handler(int signo)
 	fprintf(stderr,"exit by typing 'exit'\n");
 }
 
-/*int custom_exit(int count, int key)
+/*int custom_exit(const char *text, int state)
 {
-	state = EXIT;
-	//fprintf(stderr,"error : exit\n");
+	exit(0);
+	fprintf("stderr : exit\n");	
 	return 0;
 }*/
+
+void setup_rc(char *user)
+{
+	FILE *fp = fopen("shellrc","r");
+	int first_char;
+	fscanf(fp,"%c",&first_char);
+	if( first_char == 48 ) {fclose(fp); return;}
+	printf("Setting up rc file for once\n");
+	fclose(fp);
+	fp = fopen("shellrc","w");
+	fprintf(fp,"$include /etc/inputrc\n\n");
+	fprintf(fp,"set editing-mode emacs\n\n");
+	fprintf(fp,"~: \"/home/%s\"\n",user);
+	fclose(fp);
+}
 
 
 int main(int argc, char** argv) 
@@ -2059,6 +2073,11 @@ int main(int argc, char** argv)
 	//char* input;
 
 	system("clear");
+
+//path of inputrc file------------------------------------------------
+	setup_rc(user);
+	setenv("INPUTRC","./shellrc",1);
+//inputrc--------------------------------------------------------------
 
 //signal_ignore------------------------------------------------------------
 	signal(SIGINT, sigint_handler);
