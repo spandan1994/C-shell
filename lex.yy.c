@@ -351,8 +351,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-#define YY_NUM_RULES 9
-#define YY_END_OF_BUFFER 10
+#define YY_NUM_RULES 14
+#define YY_END_OF_BUFFER 15
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -360,28 +360,29 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static const flex_int16_t yy_accept[15] =
+static const flex_int16_t yy_accept[31] =
     {   0,
-        0,    0,   10,    2,    1,    8,    5,    3,    7,    2,
-        1,    6,    4,    0
+        0,    0,    0,    0,   15,    6,    5,   12,   13,    9,
+        7,   11,    6,    5,    3,    2,    4,    6,    5,   10,
+        8,    6,    0,    1,    0,    5,    3,    2,    4,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
     {   0,
-        1,    1,    1,    1,    1,    1,    1,    1,    2,    2,
+        1,    1,    1,    1,    1,    1,    1,    1,    2,    3,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    2,    1,    1,    1,    1,    1,    3,    1,    1,
+        1,    2,    1,    1,    1,    1,    1,    4,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    4,
-        1,    5,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    5,    1,    6,
+        1,    7,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
 
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    6,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    8,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -398,33 +399,43 @@ static const YY_CHAR yy_ec[256] =
         1,    1,    1,    1,    1
     } ;
 
-static const YY_CHAR yy_meta[7] =
+static const YY_CHAR yy_meta[9] =
     {   0,
-        1,    2,    3,    4,    5,    3
+        1,    2,    2,    3,    3,    3,    3,    3
     } ;
 
-static const flex_int16_t yy_base[19] =
+static const flex_int16_t yy_base[35] =
     {   0,
-        0,    0,   11,    0,    0,   12,    0,    0,   12,    0,
-        0,   12,   12,   12,    9,    7,    4,    2
+        0,    8,   10,   13,   37,   35,    0,   38,   38,   29,
+       27,   38,   16,   21,   32,    0,    0,   31,    0,   38,
+       38,    0,   30,   38,   29,    0,   28,    0,    0,   38,
+       24,   26,   18,   16
     } ;
 
-static const flex_int16_t yy_def[19] =
+static const flex_int16_t yy_def[35] =
     {   0,
-       14,    1,   14,   15,   16,   14,   17,   18,   14,   15,
-       16,   14,   14,    0,   14,   14,   14,   14
+       30,    1,   31,   31,   30,   30,   32,   30,   30,   30,
+       30,   30,   30,   30,   30,   33,   34,   30,   32,   30,
+       30,   13,   13,   30,   13,   14,   30,   33,   34,    0,
+       30,   30,   30,   30
     } ;
 
-static const flex_int16_t yy_nxt[19] =
+static const flex_int16_t yy_nxt[47] =
     {   0,
-        4,    5,    6,    7,    8,    9,   13,   12,   11,   10,
-       14,    3,   14,   14,   14,   14,   14,   14
+        6,    7,    7,    8,    9,   10,   11,   12,   13,   14,
+       15,   16,   16,   15,   16,   16,   22,   23,   29,   28,
+       24,   25,   26,   19,   17,   17,   17,   19,   27,   25,
+       30,   18,   27,   21,   20,   18,   30,    5,   30,   30,
+       30,   30,   30,   30,   30,   30
     } ;
 
-static const flex_int16_t yy_chk[19] =
+static const flex_int16_t yy_chk[47] =
     {   0,
-        1,    1,    1,    1,    1,    1,   18,   17,   16,   15,
-        3,   14,   14,   14,   14,   14,   14,   14
+        1,    1,    1,    1,    1,    1,    1,    1,    2,    2,
+        3,    3,    3,    4,    4,    4,   13,   13,   34,   33,
+       13,   14,   14,   14,   31,   31,   31,   32,   27,   25,
+       23,   18,   15,   11,   10,    6,    5,   30,   30,   30,
+       30,   30,   30,   30,   30,   30
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -456,7 +467,8 @@ char *yytext;
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "execution.h" 
+#include "execution.h"
+#include "variable_list.h" 
 
 #ifndef DEBUG
 	#define DEBUG 
@@ -471,13 +483,13 @@ char *yytext;
 enum {
 	START = 0,
 	COMMAND,
-	ARG,
 	PIPE,
 	IREDIR,
 	OREDIR,
 	IFILE,
 	OFILE,
 	BACKGROUND_OPT,
+	VAL,
 	UNKNOWN
 }; 
 
@@ -485,15 +497,27 @@ PIPE_LINE command_seq; //spandan
 int exec_st = 0; //spandan (for checking exec status)
 siginfo_t process_info; //spandan (for retrieving info of children)
 list *process_list; //spandan (for storing info about background processes)
+LIST *var_list; //spandan (for storing declared variables and their values)
+char *var_name; //spandan (for dumping variable name that is to be searched)
+NODE *Found; //spandan (for searching variable name)
+struct termios term_in, term_out;  //for storing and restoring terminal during execution
+struct sigaction signal_act;  //for signal handling
 
 char* commands[MAX_COMMANDS_NO][MAX_ARGS_NO];
 char* input_fname = NULL;
 char* output_fname = NULL;
 int background_opt = 0;
 
-int state;
-int command_no;
-int arg_no;
+int state = START; //initialize state, command_no, arg_no
+int command_no = 0;
+int arg_no = 0;
+
+//some flags------------------------------------------------------------
+int f_valid = 0; //validity check
+int f_cmd = 0;
+int f_indir = 0;
+int f_outdir = 0;
+//flags----------------------------------------------------------------------
 
 char user[MAX_UNAME_LEN];
 char cwd[MAX_PNAME_LEN];
@@ -507,10 +531,12 @@ static struct pam_conv conv =
 };
 
 
-#line 511 "lex.yy.c"
-#line 512 "lex.yy.c"
+#line 535 "lex.yy.c"
+
+#line 537 "lex.yy.c"
 
 #define INITIAL 0
+#define ASSIGN 1
 
 #ifndef YY_NO_UNISTD_H
 /* Special case for "unistd.h", since it is non-ANSI. We include it way
@@ -688,6 +714,9 @@ extern int yylex (void);
 #endif
 
 #define YY_RULE_SETUP \
+	if ( yyleng > 0 ) \
+		YY_CURRENT_BUFFER_LVALUE->yy_at_bol = \
+				(yytext[yyleng - 1] == '\n'); \
 	YY_USER_ACTION
 
 /** The main scanner function which does all the work.
@@ -725,10 +754,10 @@ YY_DECL
 		}
 
 	{
-#line 70 "myshell.l"
+#line 84 "myshell.l"
 
 
-#line 732 "lex.yy.c"
+#line 761 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -743,6 +772,7 @@ YY_DECL
 		yy_bp = yy_cp;
 
 		yy_current_state = (yy_start);
+		yy_current_state += YY_AT_BOL();
 yy_match:
 		do
 			{
@@ -755,13 +785,13 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 15 )
+				if ( yy_current_state >= 31 )
 					yy_c = yy_meta[yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 12 );
+		while ( yy_base[yy_current_state] != 38 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -786,85 +816,303 @@ do_action:	/* This label is used only to access EOF actions. */
 			goto yy_find_action;
 
 case 1:
-/* rule 1 can match eol */
 YY_RULE_SETUP
-#line 72 "myshell.l"
-; 		//ignore
+#line 86 "myshell.l"
+{	
+					char *declare_text = strdup(yytext);
+					int i;
+					for(i = 0 ; declare_text[i] != ':' && declare_text[i] != ' ' ; i++);
+					declare_text[i] = '\0';
+					commands[command_no][arg_no] = strdup(declare_text);
+					free(declare_text);
+					arg_no++;
+					f_valid = -1;
+					BEGIN ASSIGN;
+				}
 	YY_BREAK
 case 2:
+/* rule 2 can match eol */
 YY_RULE_SETUP
-#line 74 "myshell.l"
+#line 98 "myshell.l"
+;  //ignore;
+	YY_BREAK
+case 3:
+YY_RULE_SETUP
+#line 100 "myshell.l"
 {
-				switch(state)
+				if(state == START)
 				{
-					case COMMAND:	
-							arg_no = 0;
-							commands[command_no][arg_no] = strdup(yytext);
-							arg_no++;
-							state = ARG;
-							break;
-					case ARG:	
-							commands[command_no][arg_no] = strdup(yytext);
-							arg_no++;
-							state = ARG;
-							break;
-					case IREDIR:	
-							input_fname = strdup(yytext);
-							state = BACKGROUND_OPT;
-							break;
-					case OREDIR:	
-							output_fname = strdup(yytext);
-							state = BACKGROUND_OPT;
-							break;
-					default:
-							state= UNKNOWN;
-							break;
+					f_valid = 1;   //special case for variable assignment
+					state = VAL;
+					commands[command_no][arg_no] = strdup(yytext);
+					arg_no++;
+					BEGIN INITIAL;	
+				}	
+				else
+				{
+					f_valid = -1;
+					state = BACKGROUND_OPT;
+					BEGIN INITIAL;
 				}
 			}
 	YY_BREAK
-case 3:
-#line 103 "myshell.l"
 case 4:
-YY_RULE_SETUP
-#line 103 "myshell.l"
-{
-				state = OREDIR; 
-			}
-	YY_BREAK
-case 5:
-#line 108 "myshell.l"
-case 6:
-YY_RULE_SETUP
-#line 108 "myshell.l"
-{
-				state = IREDIR; 
-			}
-	YY_BREAK
-case 7:
-YY_RULE_SETUP
-#line 112 "myshell.l"
-{
-				command_no++;
-				state = COMMAND;
-			}
-	YY_BREAK
-case 8:
 YY_RULE_SETUP
 #line 117 "myshell.l"
 {
-				if(state = BACKGROUND_OPT)
-					{
-						background_opt = 1;
-					}
+				f_valid = -1;
+				state = BACKGROUND_OPT;
+				BEGIN INITIAL;
 			}
 	YY_BREAK
-case 9:
+case 5:
+/* rule 5 can match eol */
 YY_RULE_SETUP
-#line 124 "myshell.l"
+#line 125 "myshell.l"
+; 		//ignore
+	YY_BREAK
+case 6:
+YY_RULE_SETUP
+#line 127 "myshell.l"
+{
+			if(state == START)
+			{
+				f_cmd = 1;
+				/*search for the word in case it should be replaced*/
+				var_name = strdup(yytext);
+				Found = Search_by_var(var_list,var_name);
+				int i;
+				if(Found != NULL)
+				{
+					for(i = 1 ; (Found->variable[i]) != NULL ; i++)
+					{
+						commands[command_no][arg_no] = strdup( (Found->variable[i]) );
+						arg_no++;
+					}		
+				}
+				else
+				{	
+					commands[command_no][arg_no] = strdup(var_name);
+					arg_no++;
+				}
+				free(var_name);
+				//--------------------------------------------------
+				if( strcmp(commands[0][0],"exit") ) f_valid = 0;
+				else f_valid = -2;  //for exiting from the shell
+				state = COMMAND;
+			}
+			else if(state == VAL)
+			{
+				commands[command_no][arg_no] = strdup(yytext);
+				arg_no++;
+				f_valid = 1;
+				state = VAL;
+			}
+			else if(state == COMMAND)
+			{
+				/*search in case of replacement*/
+				var_name = strdup(yytext);
+				Found = Search_by_var(var_list,var_name);
+				int i;
+				if(Found != NULL)
+				{
+					for(i = 1 ; (Found->variable[i]) != NULL ; i++)
+					{
+						commands[command_no][arg_no] = strdup( (Found->variable[i]) );
+						arg_no++;
+					}		
+				}
+				else
+				{	
+					commands[command_no][arg_no] = strdup(var_name);
+					arg_no++;
+				}
+				free(var_name);
+				//--------------------------------------------------
+				f_valid = 0;
+				state = COMMAND;
+			}
+			else if(state == PIPE)
+			{
+				/*search in case of replacement*/
+				var_name = strdup(yytext);
+				Found = Search_by_var(var_list,var_name);
+				int i;
+				if(Found != NULL)
+				{
+					for(i = 1 ; (Found->variable[i]) != NULL ; i++)
+					{
+						commands[command_no][arg_no] = strdup( (Found->variable[i]) );
+						arg_no++;
+					}		
+				}
+				else
+				{	
+					commands[command_no][arg_no] = strdup(var_name);
+					arg_no++;
+				}
+				free(var_name);
+				//--------------------------------------------------
+				f_valid = 0;
+				state = COMMAND;
+			}
+			else if(state == IREDIR)
+			{
+				input_fname = strdup(yytext);
+				f_valid = 0;
+				state = IFILE;
+			}
+			else if(state == OREDIR)
+			{
+				output_fname = strdup(yytext);
+				f_valid = 0;
+				state = OFILE;
+			}
+			else if(state == IFILE || state == OFILE)
+			{
+				if(f_cmd)
+				{
+					f_valid = -1;
+					state = BACKGROUND_OPT;
+				}
+				else
+				{
+					f_cmd = 1;
+					/*search for the word in case it should be replaced*/
+					var_name = strdup(yytext);
+					Found = Search_by_var(var_list,var_name);
+					int i;
+					if(Found != NULL)
+					{
+						for(i = 1 ; (Found->variable[i]) != NULL ; i++)
+						{
+							commands[command_no][arg_no] = strdup( (Found->variable[i]) );
+							arg_no++;
+						}		
+					}
+					else
+					{	
+						commands[command_no][arg_no] = strdup(var_name);
+						arg_no++;
+					}
+					free(var_name);
+					//--------------------------------------------------
+					f_valid = 0;
+					state = COMMAND;
+				}	
+			}
+			else
+			{
+				f_valid = -1;
+				state = BACKGROUND_OPT;
+			}
+		}
+	YY_BREAK
+case 7:
+#line 262 "myshell.l"
+case 8:
+YY_RULE_SETUP
+#line 262 "myshell.l"
+{
+		if(f_outdir)
+		{
+			f_valid = -1;
+			state = BACKGROUND_OPT;
+		}
+		else
+		{
+			if(state == COMMAND || state == IFILE || state == START)
+			{
+				f_outdir = 1;
+				f_valid = -1;
+				state = OREDIR;
+			}
+			else
+			{
+				f_valid = -1;
+				state = BACKGROUND_OPT;
+			}
+		}
+	}
+	YY_BREAK
+case 9:
+#line 285 "myshell.l"
+case 10:
+YY_RULE_SETUP
+#line 285 "myshell.l"
+{
+		if(f_indir)
+		{
+			f_valid = -1;
+			state = BACKGROUND_OPT;
+		}
+		else
+		{
+			if(state == COMMAND || state == OFILE || state == START)
+			{
+				f_indir = 1;
+				f_valid = -1;
+				state = IREDIR;
+			}
+			else
+			{
+				f_valid = -1;
+				state = BACKGROUND_OPT;
+			}
+		}
+	}
+	YY_BREAK
+case 11:
+YY_RULE_SETUP
+#line 307 "myshell.l"
+{
+		if(state == COMMAND)
+		{
+			f_valid = -1;
+			state = PIPE;
+			command_no++;
+			arg_no = 0;
+		}
+		else
+		{
+			f_valid = -1;
+			state = BACKGROUND_OPT;
+		}
+	}
+	YY_BREAK
+case 12:
+YY_RULE_SETUP
+#line 322 "myshell.l"
+{
+		if(state == COMMAND || state == IFILE || state == OFILE)
+		{
+			background_opt = 1;
+			f_valid = 0;
+			state = BACKGROUND_OPT;
+		}
+		else
+		{
+			f_valid = -1;
+			state = BACKGROUND_OPT;
+		}
+	}
+	YY_BREAK
+case 13:
+YY_RULE_SETUP
+#line 336 "myshell.l"
+{
+		f_valid = -1;
+		state = BACKGROUND_OPT;
+	}
+	YY_BREAK
+case 14:
+YY_RULE_SETUP
+#line 342 "myshell.l"
 ECHO;
 	YY_BREAK
-#line 867 "lex.yy.c"
+#line 1114 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
+case YY_STATE_EOF(ASSIGN):
 	yyterminate();
 
 	case YY_END_OF_BUFFER:
@@ -1148,6 +1396,7 @@ static int yy_get_next_buffer (void)
 	char *yy_cp;
     
 	yy_current_state = (yy_start);
+	yy_current_state += YY_AT_BOL();
 
 	for ( yy_cp = (yytext_ptr) + YY_MORE_ADJ; yy_cp < (yy_c_buf_p); ++yy_cp )
 		{
@@ -1160,7 +1409,7 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 15 )
+			if ( yy_current_state >= 31 )
 				yy_c = yy_meta[yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
@@ -1188,11 +1437,11 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 15 )
+		if ( yy_current_state >= 31 )
 			yy_c = yy_meta[yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
-	yy_is_jam = (yy_current_state == 14);
+	yy_is_jam = (yy_current_state == 30);
 
 		return yy_is_jam ? 0 : yy_current_state;
 }
@@ -1307,6 +1556,8 @@ static int yy_get_next_buffer (void)
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
+
+	YY_CURRENT_BUFFER_LVALUE->yy_at_bol = (c == '\n');
 
 	return c;
 }
@@ -1868,7 +2119,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 124 "myshell.l"
+#line 342 "myshell.l"
 
 
 int yywrap()
@@ -1961,9 +2212,15 @@ void reset_command_storage(void)
 	background_opt = 0;
 	input_fname = output_fname = NULL;
 	
-	state = COMMAND;
+	state = START;
 	command_no = 0;
 	arg_no = 0;
+//reset flags---------------------------------------------
+	f_valid = 0;
+	f_cmd = 0;
+	f_indir = 0;
+	f_outdir = 0;
+//--------------------------------------------------------
 	
 	return;
 }
@@ -2036,26 +2293,40 @@ void sigint_handler(int signo)
 	return 0;
 }*/
 
-void setup_rc(char *user)
+void setup_rc(void)
 {
 	FILE *fp = fopen("shellrc","r");
-	int first_char;
-	fscanf(fp,"%c",&first_char);
-	if( first_char == 48 ) {fclose(fp); return;}
-	printf("Setting up rc file for once\n");
-	fclose(fp);
-	fp = fopen("shellrc","w");
-	fprintf(fp,"$include /etc/inputrc\n\n");
-	fprintf(fp,"set editing-mode emacs\n\n");
-	fprintf(fp,"~: \"/home/%s\"\n",user);
-	fclose(fp);
+	if(feof(fp))
+	{	
+		printf("Setting up rc file for once\n");	
+		fclose(fp);
+		fp = fopen("shellrc","w");
+		fprintf(fp,"$include /etc/inputrc\n\n");
+		fprintf(fp,"set editing-mode emacs\n\n");
+		fprintf(fp,"~: \"%s\"\n",getenv("HOME"));
+	}
+	else fclose(fp);
+}
+
+
+void set_default_variables(void)
+{
+	commands[0][0] = "ls"; commands[0][1] = "ls"; commands[0][2] = "--color=auto";
+	Found = MakeNODE(commands[0]);
+	pushFRONT(var_list, Found);
+	reset_command_storage();
+	
+	commands[0][0] = "ll"; commands[0][1] = "ls"; commands[0][2] = "--color=auto"; commands[0][3] = "-al";
+	Found = MakeNODE(commands[0]);
+	pushFRONT(var_list, Found);
+	reset_command_storage();
 }
 
 
 int main(int argc, char** argv) 
 {
 	int ret;
-	
+	char *eval_string = (char *)malloc(100 * sizeof(char));  //for variable substitution	
 	#ifdef DEBUG
 	if((logfile = fopen("shell.log", "w") ) == NULL)
 	{
@@ -2075,18 +2346,22 @@ int main(int argc, char** argv)
 	system("clear");
 
 //path of inputrc file------------------------------------------------
-	setup_rc(user);
+	setup_rc();
 	setenv("INPUTRC","./shellrc",1);
 //inputrc--------------------------------------------------------------
 
 //signal_ignore------------------------------------------------------------
-	signal(SIGINT, sigint_handler);
-	signal(SIGTSTP, SIG_IGN);
-	signal(SIGTTOU, SIG_IGN);
-	signal(SIGQUIT, SIG_IGN);
+	signal_act.sa_handler = sigint_handler;
+	sigaction(SIGINT, &signal_act, NULL);
+	signal_act.sa_handler = SIG_IGN;
+	sigaction(SIGTSTP, &signal_act, NULL);
+	sigaction(SIGTTOU, &signal_act, NULL);
+	sigaction(SIGQUIT, &signal_act, NULL);
 //signal_ignore------------------------------------------------------------
 		
-	process_list = Createlist(); //for storing background process info	
+	process_list = Createlist(); //for storing background process info
+	var_list = CreateLIST(); //for storing declared variable and their values	
+	set_default_variables(); //set some default variables
 
 	for(int job = 1 ; ;)
 	{
@@ -2098,7 +2373,7 @@ int main(int argc, char** argv)
 		while(temp != NULL)
 		{
 			process_info.si_pid = 0;
-			waitid(P_PID,temp->p_pid,&process_info,WEXITED|WSTOPPED|WCONTINUED|WNOHANG);
+			waitid(P_PID,temp->p_pid,&process_info,WEXITED|WSTOPPED|WCONTINUED|WNOHANG);  
 			if(process_info.si_pid > 0)
 			{
 				if(process_info.si_code == CLD_STOPPED) printf("%d stopped\n",process_info.si_pid);
@@ -2128,7 +2403,6 @@ int main(int argc, char** argv)
 
 		if((buf = readline(prompt)) != NULL )
 		{
-			if( strcmp(buf,"exit") == 0 ) break;
 			if (strlen(buf) > 0) 
 			{
   				add_history(buf);
@@ -2138,22 +2412,55 @@ int main(int argc, char** argv)
 				yy_delete_buffer(YY_CURRENT_BUFFER);
 				free(buf);
 				print_command_storage();
-				prepare_exec_env();
-				command_seq.job_id = job;  //job id for this job
-				print_exec_env();
 
-
-				for(int i=0 ; i<command_seq.num_cmds ; i++)
+//check for syntax error--------------------------------------------------------------------------------------------------------------
+				if(f_valid == -2) break;
+				else if(f_valid == -1) printf("Invalid syntax\n");
+				else if(f_valid == 1)
 				{
-					int find_st = find_path(i,command_seq.arglists);
-					if(find_st < 0) fprintf(logfile,"error : find_path\n");
-				}
+					eval_string[0] = '$'; eval_string[1] = '\0';
+					strcat(eval_string,commands[0][0]);
+					free(commands[0][0]);
+					commands[0][0] = strdup(eval_string);
+					ret = Search_and_replace(var_list, commands[0]);
+					if(ret == 0)
+					{
+						NODE *NEWnode = MakeNODE(commands[0]);
+						pushFRONT(var_list,NEWnode);
+					}
+				} 
+				else 
+				{
+					if(f_cmd == 0) printf("No command to execute\n");
+					
+					else
+					{
+						prepare_exec_env();
+						command_seq.job_id = job;  //job id for this job
+						print_exec_env();
 
-				exec_st = exec_wrapper(&command_seq, process_list);
-        			if(exec_st < 0) fprintf(logfile,"error : exec_wrapper\n");
+
+						for(int i=0 ; i<command_seq.num_cmds ; i++)
+						{
+							int find_st = find_path(i,command_seq.arglists);
+							if(find_st < 0) fprintf(logfile,"error : find_path\n");
+						}
+						
+						tcgetattr(STDIN_FILENO,&term_in);
+						tcgetattr(STDOUT_FILENO,&term_out);
+						exec_st = exec_wrapper(&command_seq, process_list);
+						if(exec_st < 0) fprintf(logfile,"error : exec_wrapper\n");
+						tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);
+						tcsetattr(STDOUT_FILENO,TCSADRAIN,&term_out);
+					
+						if(command_seq.background == 0) job = job + 1;  //id for next job
+						else if( Search_by_name(process_list, command_seq.arglists[0][0], 0) ) job = job + 1;  //if job was stopped by signal
+						free_exec_env();
+					}
+				}
+//syntax error------------------------------------------------------------------------------------------------------------------------
+
 			
-				if(command_seq.background == 0) job = job + 1;  //id for next job
-				free_exec_env();
 			}
 			
 			else free(buf);			
@@ -2162,6 +2469,8 @@ int main(int argc, char** argv)
 	
 	}
 
+	free_list(process_list);
+	Free_LIST(var_list);
   	return 0;
 }
 

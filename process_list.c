@@ -30,15 +30,15 @@ void pushfront(list *l, node *n)
 	}
 }
 
-int Search_by_name(list *l, char *name)
+int Search_by_name(list *l, char *name, int situ)
 {
 	node *temp = l->head;
 	while(temp != NULL)
 	{
-		if( strcmp( (temp->p_name) , name ) == 0 && temp->status == 0 )
+		if( strcmp( (temp->p_name) , name ) == 0 && temp->status <= 0 )
 		{
-			temp->status = 1;
-			return (temp->p_pid);
+			if(situ) temp->status = 1;   //status=1 will remove process from the process list while updation.
+			return (temp->p_pid);        //There should be a choice whether to change the status, e.g. bg and fg.
 		}
 		temp = temp->next;
 	}
@@ -81,4 +81,31 @@ void Update(list *l)
 		temp = temp->next;
 	}
 
+}
+
+void free_list(list *l)
+{
+        node *temp = l->head;
+        while(temp != NULL)
+        {
+                l->head = temp->next;
+                free(temp);
+                temp = l->head;
+        }
+        free(l);
+}
+
+int change_status(list *l, int pid, int value)
+{
+	node *temp = l->head;
+        while(temp != NULL)
+        {
+                if( temp->p_pid == pid && temp->status > 0 )
+                {
+			temp->status = value;
+			return 0;
+                }
+                temp = temp->next;
+        }
+        return -1;
 }

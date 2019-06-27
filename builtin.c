@@ -1,25 +1,30 @@
+//The shell should regain control if a foreground process stops
 
 #include "builtin.h"
 
 //utilities---------------------------------------------------------------------------
 void signal_ignore(void)
 {
-        signal (SIGINT, SIG_IGN);
-        signal (SIGQUIT, SIG_IGN);
-        signal (SIGTSTP, SIG_IGN);
-        signal (SIGTTIN, SIG_IGN);
-        signal (SIGTTOU, SIG_IGN);
-        signal (SIGCHLD, SIG_IGN);
+        struct sigaction signal_act;
+	signal_act.sa_handler = SIG_IGN;
+	sigaction (SIGINT, &signal_act, NULL);
+        sigaction (SIGQUIT, &signal_act, NULL);
+        sigaction (SIGTSTP, &signal_act, NULL);
+        sigaction (SIGTTIN, &signal_act, NULL);
+        sigaction (SIGTTOU, &signal_act, NULL);
+        sigaction (SIGCHLD, &signal_act, NULL);
 }
 
 void signal_default(void)
 {
-        signal (SIGINT, SIG_DFL);
-        signal (SIGQUIT, SIG_DFL);
-        signal (SIGTSTP, SIG_DFL);
-        signal (SIGTTIN, SIG_DFL);
-        signal (SIGTTOU, SIG_DFL);
-        signal (SIGCHLD, SIG_DFL);
+        struct sigaction signal_act;
+	signal_act.sa_handler = SIG_DFL;
+	sigaction (SIGINT, &signal_act, NULL);
+        sigaction (SIGQUIT, &signal_act, NULL);
+        sigaction (SIGTSTP, &signal_act, NULL);
+        sigaction (SIGTTIN, &signal_act, NULL);
+        sigaction (SIGTTOU, &signal_act, NULL);
+        sigaction (SIGCHLD, &signal_act, NULL);
 }
 //utilities_end-----------------------------------------------------------------------
 
@@ -83,7 +88,7 @@ int builtin_bg(char *path_name, list *process_list)
     else{
 	if(search_env(path_name) < 0) {fprintf(stderr,"error : environment search\n"); return -1;}
 	//printf("%s\n",path_name);  //check
-	int process_id = Search_by_name(process_list, path_name);
+	int process_id = Search_by_name(process_list, path_name, 0);
 	if(process_id < 0) {fprintf(stderr,"error : no such process\n"); return 0;}
 	pid_t pgid = getpgid( process_id );
 	if(pgid < 0) {fprintf(stderr,"error : getpgid\n"); return(-1);}
@@ -95,11 +100,11 @@ int builtin_bg(char *path_name, list *process_list)
 
 int builtin_fg1(char *path_name, list *process_list)
 {
-
+    int wstatus;
     if(strcmp(path_name,"--help") == 0){
         printf("Synopsis : fg pname\n");
         printf("           fg --help\n\n");
-        printf("Description :\nfg brings the process group of the process pname to the foreground.\n\n");
+        printf("Description :\nfg brings the process group of the process designated by pname to the foreground.\n\n");
         printf("Options :\n");
         printf("        --help : prints this help and exits\n");
 	return 0;
@@ -107,10 +112,10 @@ int builtin_fg1(char *path_name, list *process_list)
     else{
 	if(search_env(path_name) < 0) {fprintf(stderr,"error : environment search\n"); return -1;}
 	//printf("%s\n",path_name);  //check
-	int process_id = Search_by_name(process_list, path_name);
+	int process_id = Search_by_name(process_list, path_name, 1);
 	if(process_id < 0) {fprintf(stderr,"error : no such process\n"); return 0;}
 	pid_t pgid = getpgid( process_id );
-	//printf("%d\n",pgid);
+	//printf("%d\n",process_id);
 	if(pgid < 0) {fprintf(stderr,"error : getpgid\n"); return(-1);}
 	pid_t shell_GID = getpgid(0);
 	struct termios term_in;
@@ -121,7 +126,12 @@ int builtin_fg1(char *path_name, list *process_list)
 	if(kill( -pgid , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
 
 	//restore shell------------------------------------------
-	if(waitpid( pgid , NULL , 0 ) < 0) {fprintf(stderr,"error : wait\n"); return(-1);}
+	if( waitpid(-pgid,&wstatus,WUNTRACED) < 0 ) {fprintf(stderr,"error : wait\n"); return(-1);}
+	if( WIFSTOPPED(wstatus) )
+	{
+		fprintf(stderr,"%d stopped by signal\n",process_id);
+		if( change_status(process_list,process_id,0) < 0 ) fprintf(stderr,"error : cannot change process status\n");
+	}
 	tcsetpgrp(STDIN_FILENO,shell_GID);
 	tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);
 	//-------------------------------------------------------

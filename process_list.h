@@ -33,10 +33,14 @@ node *Makenode(char *name, pid_t pid, int job_id);
 
 void pushfront(list *l, node *n);
 
-int Search_by_name(list *l, char *name);
+int Search_by_name(list *l, char *name, int situ);
 
 int Search_by_pid(list *l, pid_t pid);
 
 void Update(list *l);
+
+void free_list(list *l);
+
+int change_status(list *l, int pid, int value);
 
 #endif

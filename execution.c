@@ -1,5 +1,6 @@
 //Builtin command used in a pipeline actually does not change anything in the main process. 
 //If you want to observe the effect of a builtin command, use it separately.
+//The shell should regain control if a foreground process stops
 
 #include "execution.h"
 
@@ -129,13 +130,12 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 
 //-----------------------------------------------------------------------------------------------------------------
 
-
-
 int execution(PIPE_LINE *cmd_seq, list *process_list){
     static int i = 1;
     //fprintf(stderr,"value of i = %d\n",i);
-    int dup2_st, exec_st, wait_st, pipe_st, status, wstatus, builtin_st;
+    int dup2_st, exec_st, wait_st, pipe_st, status, wstatus, builtin_st, shell_gid;
     static int new_gid = 0;  //new_gid for background pipeline
+    struct sigaction signal_act;  //for handling stop signal
     //fprintf(stderr,"value of i = %d\n",new_gid);
     //int temp_out = 0;
     if(i > cmd_seq->num_cmds) {i = 1; new_gid = 0; return 0;}
@@ -176,21 +176,23 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
             if(exec_st < 0) {fprintf(stderr,"error : exec : %s\n",cmd_seq->arglists[0][0]); exit(-1);}
         }
         else if(status > 0){
+
+	    node *new = Makenode(cmd_seq->arglists[0][0],status,cmd_seq->job_id);  //can be needed if child stops
 	    if(cmd_seq->background == 0)
 	    {
-		node *new = Makenode(cmd_seq->arglists[0][0],status,cmd_seq->job_id);
 		pushfront(process_list,new);
 	    }
 
             if(cmd_seq->background){
-                wait_st = waitpid(status,&wstatus,0);
+                wait_st = waitpid(status,&wstatus,WUNTRACED);
 		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
+		if( WIFSTOPPED(wstatus) )
+		{
+			fprintf(stderr,"%d stopped by signal\n",status);
+			pushfront(process_list,new);  //add process to background process list
+		}
             }
-            /*else{
-                wait_st = waitpid(status,&wstatus,WNOHANG);
-            }
-            if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
-            if(WEXITSTATUS(wstatus) == -1) return -1;*/
+
 	    return 0; 
         }
 	else{
@@ -207,7 +209,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 
         status = fork();
         if(status == 0){
-	    signal_default();  //default signaling in the children
+	    signal_default();  //default signaling in the children 
 	    //run in background----------------------------------------------
 	    if(cmd_seq->background == 0)
 	    {
@@ -243,13 +245,13 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
             }
         }
         else if(status > 0){
+	    
+	    node *new = Makenode(cmd_seq->arglists[(cmd_seq->num_cmds) - i][0],status,cmd_seq->job_id);  //can be needed if process stops
 	    if(cmd_seq->background == 0)
 	    {
-		node *new = Makenode(cmd_seq->arglists[(cmd_seq->num_cmds) - i][0],status,cmd_seq->job_id);
 		pushfront(process_list,new);
 	    }
-            /*temp_out = dup(1);
-            if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}*/
+	    
 	    if(i == 1) new_gid = status;  //all processes in the pipeline should have same gid
 
             dup2_st = dup2(fdpipe[1],1);
@@ -259,21 +261,18 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
             i = i + 1;
             exec_st = execution(cmd_seq, process_list);
             if(exec_st < 0) return -1;
-            //i--;
-
-            /*dup2_st = dup2(temp_out,1);
-            if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-            close(temp_out);*/
+            //i--; 
 
             if(cmd_seq->background){
-                wait_st = waitpid(status,&wstatus,0);
+                wait_st = waitpid(status,&wstatus,WUNTRACED);  //if a child stops, shell should regain control
 		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
+		if( WIFSTOPPED(wstatus) )
+		{
+			fprintf(stderr,"%d stopped by signal\n",status);
+			pushfront(process_list,new);  //add process to background process list
+		}
             }
-            /*else{
-                wait_st = waitpid(-1,&wstatus,WNOHANG);
-            }
-            if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
-            if(WEXITSTATUS(wstatus) == -1) return -1;*/
+ 
             return 0;  
         }
 	else{
