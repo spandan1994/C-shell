@@ -1,9 +1,12 @@
 user authenticated
+command: ls --color=auto 
+command: less 
+input stdin output stdout backopt 0
 command: python 
 input stdin output stdout backopt 1
-command: fg python 
+command: jobs 
+input stdin output stdout backopt 1
+command: fg less 
 input stdin output stdout backopt 1
 command: fg python 
-input stdin output stdout backopt 1
-command: ps 
 input stdin output stdout backopt 1

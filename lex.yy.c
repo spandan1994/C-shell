@@ -2446,6 +2446,8 @@ int main(int argc, char** argv)
 							if(find_st < 0) fprintf(logfile,"error : find_path\n");
 						}
 						
+						node *current_head = process_list->head;   //marks the current head position
+
 						tcgetattr(STDIN_FILENO,&term_in);
 						tcgetattr(STDOUT_FILENO,&term_out);
 						exec_st = exec_wrapper(&command_seq, process_list);
@@ -2453,8 +2455,9 @@ int main(int argc, char** argv)
 						tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);
 						tcsetattr(STDOUT_FILENO,TCSADRAIN,&term_out);
 					
-						if(command_seq.background == 0) job = job + 1;  //id for next job
-						else if( Search_by_name(process_list, command_seq.arglists[0][0], 0) ) job = job + 1;  //if job was stopped by signal
+						//if(command_seq.background == 0) job = job + 1;  //id for next job
+						//else if( Search_by_name(process_list, command_seq.arglists[0][0], 0) ) job = job + 1;  //if job was stopped by signal
+						if(current_head != process_list->head) job = job+1;
 						free_exec_env();
 					}
 				}
