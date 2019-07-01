@@ -586,7 +586,6 @@ int main(int argc, char** argv)
 	{
 		getcwd(cwd,  sizeof(cwd)); 
 		sprintf(prompt, "%s @ %s >>> ", user, cwd);
-
 //check for background processes--------------------------------------------------------------------------------------------
 		node *temp = process_list->head;
 		while(temp != NULL)

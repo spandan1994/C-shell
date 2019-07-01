@@ -3,6 +3,27 @@
 #include "builtin.h"
 
 //utilities---------------------------------------------------------------------------
+int my_file_dup(char *fname, int mode, int fd){ //opens a file with name fname and given mode and dup2 it at fd
+    int new_fd, dup2_st;
+    if(mode == 0){
+        new_fd = open(fname,O_RDONLY);
+        if(new_fd < 0) {fprintf(stderr,"error : open\n"); return -1;}
+    }
+    else if(mode == 1){
+        new_fd = open(fname,O_CREAT|O_WRONLY|O_TRUNC,00600);
+        if(new_fd < 0) {fprintf(stderr,"error : open\n"); return -1;}
+    }
+    else{
+        new_fd = open(fname,O_CREAT|O_APPEND,00600);
+        if(new_fd < 0) {fprintf(stderr,"error : open\n"); return -1;}
+    }
+    dup2_st = dup2(new_fd,fd);
+    if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
+    close(new_fd);
+
+    return 0;
+}
+
 void signal_ignore(void)
 {
         struct sigaction signal_act;
@@ -120,13 +141,19 @@ int builtin_fg1(char *path_name, list *process_list)
 	pid_t shell_GID = getpgid(0);
 	struct termios term_in;
 	tcgetattr(STDIN_FILENO,&term_in);
-	//signal (SIGTTOU, SIG_IGN);
-	//signal (SIGTSTP, SIG_IGN);
 	tcsetpgrp(STDIN_FILENO,pgid);
-	if(kill( -pgid , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
+	if(shell_GID == pgid)
+	{
+		if(kill( process_id , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
+		if( waitpid(-pgid,&wstatus,WUNTRACED) < 0 ) {fprintf(stderr,"error : wait\n"); return(-1);}
+	}
+	else
+	{
+		if(kill( -pgid , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
+		if( waitpid(pgid,&wstatus,WUNTRACED) < 0 ) {fprintf(stderr,"error : wait\n"); return(-1);}
+	}
 
 	//restore shell------------------------------------------
-	if( waitpid(-pgid,&wstatus,WUNTRACED) < 0 ) {fprintf(stderr,"error : wait\n"); return(-1);}
 	if( WIFSTOPPED(wstatus) )
 	{
 		fprintf(stderr,"%d stopped by signal\n",process_id);
@@ -142,8 +169,6 @@ int builtin_fg1(char *path_name, list *process_list)
 int fg_wrapper(char *path_name, list *process_list)
 {
 	if(builtin_fg1(path_name, process_list) < 0) fprintf(stderr,"error : fg\n");
-	//signal (SIGTTOU, SIG_DFL);
-	//signal (SIGTSTP, SIG_DFL);
 	return 0;
 }
 //---------------------------------------------------------------------------------------------------
@@ -152,18 +177,10 @@ int builtin_setenv(const char **argv, const char *in_fname, const char *out_fnam
     int dup2_st, env_st;
 
     if(strcmp(in_fname,"stdin") != 0){
-        int curr_in = open(in_fname,O_RDONLY);
-        if(curr_in < 0) {fprintf(stderr,"error : open\n"); return -1;}
-        dup2_st = dup2(curr_in,0);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        close(curr_in);
+	if(my_file_dup((char *)in_fname,0,0) < 0) return -1;
     }
     if(strcmp(out_fname,"stdout") != 0){
-        int curr_out = open(out_fname,O_CREAT|O_WRONLY|O_TRUNC,00600);
-        if(curr_out < 0) {fprintf(stderr,"error : open\n"); return -1;}
-        dup2_st = dup2(curr_out,1);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        close(curr_out);
+	if(my_file_dup((char *)out_fname,1,1) < 0) return -1;
     }
 
     if(strcmp(argv[1],"--help") == 0){
@@ -247,19 +264,11 @@ int setenv_wrapper(const char **argv, const char *in_fname, const char *out_fnam
 int builtin_jobs(char *path_name,list *process_list, const char *in_fname, const char *out_fname){
     int dup2_st;
 
-    if(strcmp(in_fname,"stdin") != 0){
-        int curr_in = open(in_fname,O_RDONLY);
-        if(curr_in < 0) {fprintf(stderr,"error : open\n"); return -1;}
-        dup2_st = dup2(curr_in,0);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        close(curr_in);
+    if(strcmp(in_fname,"stdin") != 0){	
+	if(my_file_dup((char *)in_fname,0,0) < 0) return -1;
     }
     if(strcmp(out_fname,"stdout") != 0){
-        int curr_out = open(out_fname,O_CREAT|O_WRONLY|O_TRUNC,00600);
-        if(curr_out < 0) {fprintf(stderr,"error : open\n"); return -1;}
-        dup2_st = dup2(curr_out,1);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        close(curr_out);
+	if(my_file_dup((char *)out_fname,1,1) < 0) return -1;
     }
     if(strcmp(path_name,"--help") == 0){
         printf("Synopsis : jobs\n");
@@ -369,20 +378,11 @@ int jobs_wrapper(char *path_name,list *process_list, const char *in_fname, const
 
 int builtin_unsetenv(const char *path_name, const char *in_fname, const char *out_fname){
     int dup2_st;
-
-    if(strcmp(in_fname,"stdin") != 0){
-        int curr_in = open(in_fname,O_RDONLY);
-        if(curr_in < 0) {fprintf(stderr,"error : open\n"); return -1;}
-        dup2_st = dup2(curr_in,0);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        close(curr_in);
+    if(strcmp(in_fname,"stdin") != 0){	
+	if(my_file_dup((char *)in_fname,0,0) < 0) return -1;
     }
     if(strcmp(out_fname,"stdout") != 0){
-        int curr_out = open(out_fname,O_CREAT|O_WRONLY|O_TRUNC,00600);
-        if(curr_out < 0) {fprintf(stderr,"error : open\n"); return -1;}
-        dup2_st = dup2(curr_out,1);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        close(curr_out);
+	if(my_file_dup((char *)out_fname,1,1) < 0) return -1;
     }
     if(strcmp(path_name,"--help") == 0){
         printf("Synopsis : unsetenv variable_name\n");
@@ -434,20 +434,11 @@ int unsetenv_wrapper(const char *path_name, const char *in_fname, const char *ou
 
 int builtin_cd(const char *path_name, const char *in_fname, const char *out_fname){
     int dup2_st;
-
-    if(strcmp(in_fname,"stdin") != 0){
-        int curr_in = open(in_fname,O_RDONLY);
-        if(curr_in < 0) {fprintf(stderr,"error : open\n"); return -1;}
-        dup2_st = dup2(curr_in,0);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        close(curr_in);
+    if(strcmp(in_fname,"stdin") != 0){	
+	if(my_file_dup((char *)in_fname,0,0) < 0) return -1;
     }
     if(strcmp(out_fname,"stdout") != 0){
-        int curr_out = open(out_fname,O_CREAT|O_WRONLY|O_TRUNC,00600);
-        if(curr_out < 0) {fprintf(stderr,"error : open\n"); return -1;}
-        dup2_st = dup2(curr_out,1);
-        if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-        close(curr_out);
+	if(my_file_dup((char *)out_fname,1,1) < 0) return -1;
     }
     int cd_st = chdir(path_name);
     if(cd_st < 0) {fprintf(stderr,"error : chdir\n"); return -1;}

@@ -4,6 +4,8 @@
 #ifndef BUILTIN_H
 #define BUILTIN_H
 
+int my_file_dup(char *fname, int mode, int fd);
+
 void signal_ignore(void);
 
 void signal_default(void);

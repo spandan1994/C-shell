@@ -1,12 +1,17 @@
 user authenticated
-command: ls --color=auto 
-command: less 
-input stdin output stdout backopt 0
-command: python 
+command: fg --help 
+input readme output todo backopt 1
+command: cat todo 
 input stdin output stdout backopt 1
-command: jobs 
+command: bg --help 
+input readme output todo backopt 1
+command: cat todo 
 input stdin output stdout backopt 1
-command: fg less 
+command: cd .. 
+input readme output todo backopt 1
+command: cat todo 
 input stdin output stdout backopt 1
-command: fg python 
+command: cd myshell/ 
+input stdin output stdout backopt 1
+command: cat todo 
 input stdin output stdout backopt 1

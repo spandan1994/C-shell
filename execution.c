@@ -6,27 +6,6 @@
 
 //utilities--------------------------------------------------------------------------------------------------------
 
-int my_file_dup(char *fname, int mode, int fd){ //opens a file with name fname and given mode and dup2 it at fd
-    int new_fd, dup2_st;
-    if(mode == 0){
-        new_fd = open(fname,O_RDONLY);
-        if(new_fd < 0) {fprintf(stderr,"error : open\n"); return -1;}
-    }
-    else if(mode == 1){
-        new_fd = open(fname,O_CREAT|O_WRONLY|O_TRUNC,00600);
-        if(new_fd < 0) {fprintf(stderr,"error : open\n"); return -1;}
-    }
-    else{
-        new_fd = open(fname,O_CREAT|O_APPEND,00600);
-        if(new_fd < 0) {fprintf(stderr,"error : open\n"); return -1;}
-    }
-    dup2_st = dup2(new_fd,fd);
-    if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
-    close(new_fd);
-
-    return 0;
-}
-
 int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 {
 	int cd_st, env_st;
@@ -60,6 +39,12 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 		}
 
 		if(strcmp(cmd_seq->arglists[0][0],"fg") == 0){
+			if(strcmp(cmd_seq->in_fname,"stdin") != 0){
+				if(my_file_dup(cmd_seq->in_fname,0,0) < 0) return(-1);
+			}
+			if(strcmp(cmd_seq->out_fname,"stdout") != 0){
+				if(my_file_dup(cmd_seq->out_fname,1,1) < 0) return(-1);
+			}
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : fg : no argument. Type fg --help\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : fg : excess arguments\n"); return -1;}
 		    env_st = builtin_fg1(cmd_seq->arglists[0][1], process_list);
@@ -68,6 +53,12 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 		}   //not yet fullproof. check into it.
 		
 		if(strcmp(cmd_seq->arglists[0][0],"bg") == 0){
+			if(strcmp(cmd_seq->in_fname,"stdin") != 0){
+				if(my_file_dup(cmd_seq->in_fname,0,0) < 0) return(-1);
+			}
+			if(strcmp(cmd_seq->out_fname,"stdout") != 0){
+				if(my_file_dup(cmd_seq->out_fname,1,1) < 0) return(-1);
+			}
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : bg : no argument. Type bg --help\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : bg : excess arguments\n"); return -1;}
 		    env_st = builtin_bg(cmd_seq->arglists[0][1], process_list);
@@ -181,6 +172,11 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 	    if(cmd_seq->background == 0)
 	    {
 		pushfront(process_list,new);
+		/*wait_st = waitpid(status,&wstatus,WUNTRACED|WNOHANG);
+		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
+		if( WIFSTOPPED(wstatus) ) fprintf(stderr,"%d stopped\n",status);
+		else if( WIFEXITED(wstatus) ) {fprintf(stderr,"%d exited\n",status); new->status=1;}
+		else if( WIFCONTINUED(wstatus) ) fprintf(stderr,"%d continued\n",status);*/
 	    }
 
             if(cmd_seq->background){
@@ -250,6 +246,11 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 	    if(cmd_seq->background == 0)
 	    {
 		pushfront(process_list,new);
+		/*wait_st = waitpid(status,&wstatus,WUNTRACED|WNOHANG);
+		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
+		if( WIFSTOPPED(wstatus) ) fprintf(stderr,"%d stopped\n",status);
+		else if( WIFEXITED(wstatus) ) {fprintf(stderr,"%d exited\n",status); new->status = 1;}
+		else if( WIFCONTINUED(wstatus) ) fprintf(stderr,"%d continued\n",status);*/
 	    }
 	    
 	    if(i == 1) new_gid = status;  //all processes in the pipeline should have same gid
