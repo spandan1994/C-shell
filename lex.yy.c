@@ -914,7 +914,7 @@ YY_RULE_SETUP
 				var_name = strdup(yytext);
 				Found = Search_by_var(var_list,var_name);
 				int i;
-				if(Found != NULL)
+				if(Found != NULL && (Found->variable[0][0]) == '$')
 				{
 					for(i = 1 ; (Found->variable[i]) != NULL ; i++)
 					{
