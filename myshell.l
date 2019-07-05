@@ -441,6 +441,7 @@ void reset_command_storage(void)
 	f_outdir = 0;
 //--------------------------------------------------------
 	
+	BEGIN INITIAL;  //reset lex start state to INITIAL	
 	return;
 }
 

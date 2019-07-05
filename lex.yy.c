@@ -914,7 +914,7 @@ YY_RULE_SETUP
 				var_name = strdup(yytext);
 				Found = Search_by_var(var_list,var_name);
 				int i;
-				if(Found != NULL && (Found->variable[0][0]) == '$')
+				if(Found != NULL && (Found->variable[0][0]) == '$')  //argument cannot be shell variable, only user defined
 				{
 					for(i = 1 ; (Found->variable[i]) != NULL ; i++)
 					{
@@ -2222,6 +2222,7 @@ void reset_command_storage(void)
 	f_outdir = 0;
 //--------------------------------------------------------
 	
+	BEGIN INITIAL;	
 	return;
 }
 
