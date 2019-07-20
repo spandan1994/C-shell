@@ -1,7 +1,3 @@
 user authenticated
-command: grep int exec_st myshell.l 
-input stdin output stdout backopt 1
-command: grep int exec_st myshell.l --color=auto 
-input stdin output stdout backopt 1
-command: ls --color=auto 
+command: grep --color=auto int exec_st myshell.l 
 input stdin output stdout backopt 1

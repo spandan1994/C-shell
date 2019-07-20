@@ -619,6 +619,11 @@ void set_default_variables(void)
 	Found = MakeNODE(commands[0]);
 	pushFRONT(var_list, Found);
 	reset_command_storage();
+
+	commands[0][0] = "grep"; commands[0][1] = "grep"; commands[0][2] = "--color=auto";
+	Found = MakeNODE(commands[0]);
+	pushFRONT(var_list, Found);
+	reset_command_storage();
 }
 
 
