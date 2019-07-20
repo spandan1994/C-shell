@@ -462,6 +462,14 @@ char *yytext;
 #line 1 "myshell.l"
 #line 3 "myshell.l"
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -538,9 +546,9 @@ static struct pam_conv conv =
 };
 
 
-#line 542 "lex.yy.c"
+#line 550 "lex.yy.c"
 
-#line 544 "lex.yy.c"
+#line 552 "lex.yy.c"
 
 #define INITIAL 0
 #define ASSIGN 1
@@ -762,10 +770,10 @@ YY_DECL
 		}
 
 	{
-#line 84 "myshell.l"
+#line 92 "myshell.l"
 
 
-#line 769 "lex.yy.c"
+#line 777 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -825,7 +833,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 86 "myshell.l"
+#line 94 "myshell.l"
 {	
 					char *declare_text = strdup(yytext);
 					int i;
@@ -841,7 +849,7 @@ YY_RULE_SETUP
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 98 "myshell.l"
+#line 106 "myshell.l"
 {
 				if(state == VAL)
 				{
@@ -866,7 +874,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 120 "myshell.l"
+#line 128 "myshell.l"
 {
 			if(state == VAL)
 			{
@@ -891,12 +899,12 @@ YY_RULE_SETUP
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 142 "myshell.l"
+#line 150 "myshell.l"
 ;  //ignore;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 144 "myshell.l"
+#line 152 "myshell.l"
 {
 				if(state == START)
 				{
@@ -916,7 +924,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 161 "myshell.l"
+#line 169 "myshell.l"
 {
 			if(state == START)
 			{
@@ -934,7 +942,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 176 "myshell.l"
+#line 184 "myshell.l"
 {
 				f_valid = -1;
 				state = BACKGROUND_OPT;
@@ -944,12 +952,12 @@ YY_RULE_SETUP
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 184 "myshell.l"
+#line 192 "myshell.l"
 ; 		//ignore
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 186 "myshell.l"
+#line 194 "myshell.l"
 {
 		if(state == COMMAND)
 		{
@@ -972,7 +980,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 206 "myshell.l"
+#line 214 "myshell.l"
 {
 			if(state == START)
 			{
@@ -1108,10 +1116,10 @@ YY_RULE_SETUP
 		}
 	YY_BREAK
 case 11:
-#line 341 "myshell.l"
+#line 349 "myshell.l"
 case 12:
 YY_RULE_SETUP
-#line 341 "myshell.l"
+#line 349 "myshell.l"
 {
 		if(f_outdir)
 		{
@@ -1135,10 +1143,10 @@ YY_RULE_SETUP
 	}
 	YY_BREAK
 case 13:
-#line 364 "myshell.l"
+#line 372 "myshell.l"
 case 14:
 YY_RULE_SETUP
-#line 364 "myshell.l"
+#line 372 "myshell.l"
 {
 		if(f_indir)
 		{
@@ -1163,7 +1171,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 386 "myshell.l"
+#line 394 "myshell.l"
 {
 		if(state == COMMAND)
 		{
@@ -1181,7 +1189,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 401 "myshell.l"
+#line 409 "myshell.l"
 {
 		if(state == COMMAND || state == IFILE || state == OFILE)
 		{
@@ -1198,7 +1206,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 415 "myshell.l"
+#line 423 "myshell.l"
 {
 		f_valid = -1;
 		state = BACKGROUND_OPT;
@@ -1206,10 +1214,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 421 "myshell.l"
+#line 429 "myshell.l"
 ECHO;
 	YY_BREAK
-#line 1213 "lex.yy.c"
+#line 1221 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(ASSIGN):
 case YY_STATE_EOF(EXACT):
@@ -2219,7 +2227,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 421 "myshell.l"
+#line 429 "myshell.l"
 
 
 int yywrap()
@@ -2472,7 +2480,7 @@ int main(int argc, char** argv)
 	for(int job = 1 ; ;)
 	{
 		getcwd(cwd,  sizeof(cwd)); 
-		sprintf(prompt, "%s @ %s >>> ", user, cwd);
+		sprintf(prompt, ANSI_COLOR_BLUE "%s @ %s >>> " ANSI_COLOR_RESET , user, cwd);
 //check for background processes--------------------------------------------------------------------------------------------
 		node *temp = process_list->head;
 		while(temp != NULL)

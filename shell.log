@@ -1,3 +1,5 @@
 user authenticated
-command: grep --color=auto int exec_st myshell.l 
+command: habruhah 
+input stdin output stdout backopt 1
+command: ls --color=auto 
 input stdin output stdout backopt 1
