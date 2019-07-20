@@ -2480,7 +2480,7 @@ int main(int argc, char** argv)
 	for(int job = 1 ; ;)
 	{
 		getcwd(cwd,  sizeof(cwd)); 
-		sprintf(prompt, ANSI_COLOR_BLUE "%s @ %s >>> " ANSI_COLOR_RESET , user, cwd);
+		sprintf(prompt, ANSI_COLOR_GREEN "%s @ %s >>> " ANSI_COLOR_RESET , user, cwd);
 //check for background processes--------------------------------------------------------------------------------------------
 		node *temp = process_list->head;
 		while(temp != NULL)
