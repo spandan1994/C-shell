@@ -79,11 +79,11 @@ static struct pam_conv conv =
 
 %}
 
-%x ASSIGN
+%x ASSIGN EXACT
 
 %%
 
-^[ \t]*[^:| \t\n><&]+[ \t]*:	{	
+^[ \t]*[^:| \t\n"><&]+[ \t]*:	{	
 					char *declare_text = strdup(yytext);
 					int i;
 					for(i = 0 ; declare_text[i] != ':' && declare_text[i] != ' ' ; i++);
@@ -95,9 +95,53 @@ static struct pam_conv conv =
 					BEGIN ASSIGN;
 				}
 
+<EXACT>[^:"><&]+	{
+				if(state == VAL)
+				{
+					f_valid = 1;
+					state = VAL;
+					commands[command_no][arg_no] = strdup(yytext);
+					arg_no++;
+				}
+				else if(state == COMMAND)
+				{
+					f_valid = 0;
+					state = COMMAND;
+					commands[command_no][arg_no] = strdup(yytext);
+					arg_no++;
+				}
+				else
+				{
+					f_valid = -1;
+					state = BACKGROUND_OPT;
+				}
+			}
+
+<EXACT>["]	{
+			if(state == VAL)
+			{
+				if(f_valid == -1) state = BACKGROUND_OPT;
+				else state = VAL;
+				BEGIN INITIAL;
+			}
+			else if(state == COMMAND)
+			{
+				if(f_valid == -1) state = BACKGROUND_OPT;
+				else state = COMMAND;
+				BEGIN INITIAL;
+			}
+			else
+			{
+				f_valid = -1;
+				state = BACKGROUND_OPT;
+				BEGIN INITIAL;
+			}
+		}	
+
+
 <ASSIGN>[ \t\n]+	;  //ignore;
 
-<ASSIGN>[^:| \t\n><&]+	{
+<ASSIGN>[^:| \t\n"><&]+	{
 				if(state == START)
 				{
 					f_valid = 1;   //special case for variable assignment
@@ -114,6 +158,21 @@ static struct pam_conv conv =
 				}
 			}
 
+<ASSIGN>["]	{
+			if(state == START)
+			{
+				f_valid = -1;
+				state = VAL;
+				BEGIN EXACT;
+			}
+			else
+			{
+				f_valid = -1;
+				state = BACKGROUND_OPT;
+				BEGIN INITIAL;
+			}
+		}
+
 <ASSIGN>[|:><&]+	{
 				f_valid = -1;
 				state = BACKGROUND_OPT;
@@ -124,7 +183,27 @@ static struct pam_conv conv =
 
 [ \t\n]+	; 		//ignore
 
-[^:| \t\n><&]+	{
+["]	{
+		if(state == COMMAND)
+		{
+			f_valid = -1;
+			state = COMMAND;
+			BEGIN EXACT;
+		}
+		else if(state == VAL)
+		{
+			f_valid = -1;
+			state = VAL;
+			BEGIN EXACT;
+		}
+		else
+		{
+			f_valid = -1;
+			state = BACKGROUND_OPT;
+		}
+	}
+
+[^:| \t\n"><&]+	{
 			if(state == START)
 			{
 				f_cmd = 1;
