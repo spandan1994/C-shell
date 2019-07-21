@@ -52,7 +52,7 @@ int Search_by_pid(list *l, pid_t pid)
 	{
 		if( (temp->p_pid) == pid )
 		{
-			return 0;
+			return (temp->job_id);
 		}
 		temp = temp->next;
 	}
@@ -95,17 +95,22 @@ void free_list(list *l)
         free(l);
 }
 
-int change_status(list *l, int pid, int value)
+int change_status(list *l, int pid, int value)   //changes status of all processes having the job_id pid
 {
 	node *temp = l->head;
+	int state = 0;
         while(temp != NULL)
         {
-                if( temp->p_pid == pid && temp->status > 0 )
+                if( temp->job_id == pid )
                 {
-			temp->status = value;
-			return 0;
+			if( temp->status != value ) temp->status = value;
+			state = 1;
                 }
+		else
+		{
+			if( state != 0 ) return 0;  //avoids unnecessary traversal of linked list
+		}
                 temp = temp->next;
         }
-        return -1;
+        return 0;
 }

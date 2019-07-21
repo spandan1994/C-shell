@@ -163,7 +163,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 		    //builtin--------------------------------------------------------------
 	    }
 
-            exec_st = execv(cmd_seq->arglists[0][0],cmd_seq->arglists[0]);
+            exec_st = execvp(cmd_seq->arglists[0][0],cmd_seq->arglists[0]);
             if(exec_st < 0) {fprintf(stderr,"error : exec : %s\n",cmd_seq->arglists[0][0]); exit(-1);}
         }
         else if(status > 0){
@@ -234,7 +234,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 	    builtin_st = call_builtin(cmd_seq, process_list, i, 1);
 	    if(builtin_st == 0 || builtin_st == -1) exit(builtin_st);
             //builtin--------------------------------------------------------------
-            exec_st = execv(cmd_seq->arglists[cmd_seq->num_cmds-i][0],cmd_seq->arglists[cmd_seq->num_cmds-i]);
+            exec_st = execvp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],cmd_seq->arglists[cmd_seq->num_cmds-i]);
             if(exec_st < 0){
                 fprintf(stderr,"error : exec : %s\n",cmd_seq->arglists[cmd_seq->num_cmds-i][0]);
                 exit(-1);

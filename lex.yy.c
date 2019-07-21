@@ -2471,6 +2471,7 @@ int main(int argc, char** argv)
 	sigaction(SIGTSTP, &signal_act, NULL);
 	sigaction(SIGTTOU, &signal_act, NULL);
 	sigaction(SIGQUIT, &signal_act, NULL);
+	sigaction(SIGHUP, &signal_act, NULL);
 //signal_ignore------------------------------------------------------------
 		
 	process_list = Createlist(); //for storing background process info
@@ -2553,11 +2554,11 @@ int main(int argc, char** argv)
 						print_exec_env();
 
 
-						for(int i=0 ; i<command_seq.num_cmds ; i++)
+						/*for(int i=0 ; i<command_seq.num_cmds ; i++)
 						{
 							int find_st = find_path(i,command_seq.arglists);
 							if(find_st < 0) fprintf(logfile,"error : find_path\n");
-						}
+						}*/
 						
 						node *current_head = process_list->head;   //marks the current head position
 

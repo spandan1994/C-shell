@@ -34,6 +34,7 @@ void signal_ignore(void)
         sigaction (SIGTTIN, &signal_act, NULL);
         sigaction (SIGTTOU, &signal_act, NULL);
         sigaction (SIGCHLD, &signal_act, NULL);
+	sigaction (SIGHUP, &signal_act, NULL);
 }
 
 void signal_default(void)
@@ -46,6 +47,7 @@ void signal_default(void)
         sigaction (SIGTTIN, &signal_act, NULL);
         sigaction (SIGTTOU, &signal_act, NULL);
         sigaction (SIGCHLD, &signal_act, NULL);
+	sigaction (SIGHUP, &signal_act, NULL);
 }
 //utilities_end-----------------------------------------------------------------------
 
@@ -107,7 +109,7 @@ int builtin_bg(char *path_name, list *process_list)
 	return 0;
     }
     else{
-	if(search_env(path_name) < 0) {fprintf(stderr,"error : environment search\n"); return -1;}
+	//if(search_env(path_name) < 0) {fprintf(stderr,"error : environment search\n"); return -1;}
 	//printf("%s\n",path_name);  //check
 	int process_id = Search_by_name(process_list, path_name, 0);
 	if(process_id < 0) {fprintf(stderr,"error : no such process\n"); return 0;}
@@ -131,10 +133,14 @@ int builtin_fg1(char *path_name, list *process_list)
 	return 0;
     }
     else{
-	if(search_env(path_name) < 0) {fprintf(stderr,"error : environment search\n"); return -1;}
+	//if(search_env(path_name) < 0) {fprintf(stderr,"error : environment search\n"); return -1;}
 	//printf("%s\n",path_name);  //check
 	int process_id = Search_by_name(process_list, path_name, 1);
 	if(process_id < 0) {fprintf(stderr,"error : no such process\n"); return 0;}
+
+	int current_job = Search_by_pid(process_list, process_id);   //jid of the current job
+	change_status(process_list, current_job, 1);  //all jobs having same jid are given status 1
+
 	pid_t pgid = getpgid( process_id );
 	//printf("%d\n",process_id);
 	if(pgid < 0) {fprintf(stderr,"error : getpgid\n"); return(-1);}
@@ -157,7 +163,7 @@ int builtin_fg1(char *path_name, list *process_list)
 	if( WIFSTOPPED(wstatus) )
 	{
 		fprintf(stderr,"%d stopped by signal\n",process_id);
-		if( change_status(process_list,process_id,0) < 0 ) fprintf(stderr,"error : cannot change process status\n");
+		change_status(process_list,current_job,0);
 	}
 	tcsetpgrp(STDIN_FILENO,shell_GID);
 	tcsetattr(STDIN_FILENO,TCSADRAIN,&term_in);
