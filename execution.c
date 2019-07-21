@@ -13,7 +13,7 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 	if(cases == 0)
 	{
 		if(strcmp(cmd_seq->arglists[0][0],"cd") == 0){
-		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : cd : no destination given\n"); return -1;}
+		    if(cmd_seq->arglists[0][1] == NULL) cmd_seq->arglists[0][1] = strdup(getenv("HOME")); //no destination meand home
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : cd : excess arguments\n"); return -1;}
 		    cd_st = cd_wrapper(cmd_seq->arglists[0][1],cmd_seq->in_fname,cmd_seq->out_fname);
 		    if(cd_st < 0) {fprintf(stderr,"error : cd\n"); return -1;}
@@ -75,7 +75,7 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 	else
 	{
 	    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"cd") == 0){
-		if(cmd_seq->arglists[cmd_seq->num_cmds-i][1] == NULL) {fprintf(stderr,"error : cd : no destination given\n"); return(-1);}
+		if(cmd_seq->arglists[cmd_seq->num_cmds-i][1] == NULL) cmd_seq->arglists[cmd_seq->num_cmds-i][1] = strdup(getenv("HOME"));  //no destination means home
 		if(cmd_seq->arglists[cmd_seq->num_cmds-i][2] != NULL) {fprintf(stderr,"error : cd : excess arguments\n"); return(-1);}
 		cd_st = cd_wrapper1(cmd_seq->arglists[cmd_seq->num_cmds-i][1]);
 		if(cd_st < 0) {fprintf(stderr,"error : cd\n"); return(-1);}
