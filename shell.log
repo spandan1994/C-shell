@@ -1,8 +1,11 @@
 user authenticated
-command: cd 
-command: echo 
+command: cd ../test/ 
 input stdin output stdout backopt 1
 command: ls --color=auto 
+input stdin output new.txt backopt 1
+command: cat new.txt 
 input stdin output stdout backopt 1
-command: git commit -a 
+command: rm new.txt 
+input stdin output stdout backopt 1
+command: ls --color=auto 
 input stdin output stdout backopt 1

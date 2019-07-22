@@ -357,6 +357,8 @@ static struct pam_conv conv =
 			if(state == COMMAND || state == IFILE || state == START)
 			{
 				f_outdir = 1;
+				if(strcmp(yytext,">") == 0) command_seq.out_cond = 1;
+				else command_seq.out_cond = 2; 
 				f_valid = -1;
 				state = OREDIR;
 			}

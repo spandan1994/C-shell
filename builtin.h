@@ -18,27 +18,27 @@ int builtin_fg1(char *path_name, list *process_list);
 
 int fg_wrapper(char *path_name, list *process_list);
 
-int builtin_setenv(const char **argv, const char *in_fname, const char *out_fname);
+int builtin_setenv(const char **argv, const char *in_fname, const char *out_fname, int out_cond);
 
 int builtin_setenv1(const char **argv);
 
-int setenv_wrapper(const char **argv, const char *in_fname, const char *out_fname);
+int setenv_wrapper(const char **argv, const char *in_fname, const char *out_fname, int out_cond);
 
-int builtin_jobs(char *path_name,list *process_list, const char *in_fname, const char *out_fname);
+int builtin_jobs(char *path_name,list *process_list, const char *in_fname, const char *out_fname, int out_cond);
 
 int builtin_jobs1(char *path_name,list *process_list);
 
-int jobs_wrapper(char *path_name,list *process_list, const char *in_fname, const char *out_fname);
+int jobs_wrapper(char *path_name,list *process_list, const char *in_fname, const char *out_fname, int out_cond);
 
-int builtin_unsetenv(const char *path_name, const char *in_fname, const char *out_fname);
+int builtin_unsetenv(const char *path_name, const char *in_fname, const char *out_fname, int out_cond);
 
 int builtin_unsetenv1(const char *path_name);
 
-int unsetenv_wrapper(const char *path_name, const char *in_fname, const char *out_fname);
+int unsetenv_wrapper(const char *path_name, const char *in_fname, const char *out_fname, int out_cond);
 
-int builtin_cd(const char *path_name, const char *in_fname, const char *out_fname);
+int builtin_cd(const char *path_name, const char *in_fname, const char *out_fname, int out_cond);
 
-int cd_wrapper(const char *path_name, const char *in_fname, const char *out_fname);
+int cd_wrapper(const char *path_name, const char *in_fname, const char *out_fname, int out_cond);
 
 int cd_wrapper1(const char *path_name);
 

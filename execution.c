@@ -15,17 +15,17 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 		if(strcmp(cmd_seq->arglists[0][0],"cd") == 0){
 		    if(cmd_seq->arglists[0][1] == NULL) cmd_seq->arglists[0][1] = strdup(getenv("HOME")); //no destination meand home
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : cd : excess arguments\n"); return -1;}
-		    cd_st = cd_wrapper(cmd_seq->arglists[0][1],cmd_seq->in_fname,cmd_seq->out_fname);
+		    cd_st = cd_wrapper(cmd_seq->arglists[0][1],cmd_seq->in_fname,cmd_seq->out_fname,cmd_seq->out_cond);
 		    if(cd_st < 0) {fprintf(stderr,"error : cd\n"); return -1;}
 		    return 0;
 		}
 		if(strcmp(cmd_seq->arglists[0][0],"jobs") == 0){
                     if(cmd_seq->arglists[0][1] == NULL){
-			env_st = jobs_wrapper("0",process_list,cmd_seq->in_fname,cmd_seq->out_fname);
+			env_st = jobs_wrapper("0",process_list,cmd_seq->in_fname,cmd_seq->out_fname,cmd_seq->out_cond);
 			if(env_st < 0) {fprintf(stderr,"error : jobs\n"); return -1;}
 		    }
 		    else if( strcmp(cmd_seq->arglists[0][1],"--help") == 0 ) 
-			   jobs_wrapper(cmd_seq->arglists[0][1],process_list,cmd_seq->in_fname,cmd_seq->out_fname);
+			   jobs_wrapper(cmd_seq->arglists[0][1],process_list,cmd_seq->in_fname,cmd_seq->out_fname,cmd_seq->out_cond);
                     
 		    else {fprintf(stderr,"error : wrong argument, check jobs --help\n"); return -1;}
                     return 0;
@@ -33,7 +33,7 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 		if(strcmp(cmd_seq->arglists[0][0],"unsetenv") == 0){
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : unsetenv : no environment variable given\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : unsetenv : excess arguments\n"); return -1;}
-		    env_st = unsetenv_wrapper(cmd_seq->arglists[0][1],cmd_seq->in_fname,cmd_seq->out_fname);
+		    env_st = unsetenv_wrapper(cmd_seq->arglists[0][1],cmd_seq->in_fname,cmd_seq->out_fname,cmd_seq->out_cond);
 		    if(env_st < 0) {fprintf(stderr,"error : unsetenv\n"); return -1;}
 		    return 0;
 		}
@@ -43,7 +43,10 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 				if(my_file_dup(cmd_seq->in_fname,0,0) < 0) return(-1);
 			}
 			if(strcmp(cmd_seq->out_fname,"stdout") != 0){
-				if(my_file_dup(cmd_seq->out_fname,1,1) < 0) return(-1);
+				if(cmd_seq->out_cond == 1)
+					{if(my_file_dup(cmd_seq->out_fname,1,1) < 0) return(-1);}
+				else
+					{if(my_file_dup(cmd_seq->out_fname,2,1) < 0) return(-1);}
 			}
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : fg : no argument. Type fg --help\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : fg : excess arguments\n"); return -1;}
@@ -57,7 +60,10 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 				if(my_file_dup(cmd_seq->in_fname,0,0) < 0) return(-1);
 			}
 			if(strcmp(cmd_seq->out_fname,"stdout") != 0){
-				if(my_file_dup(cmd_seq->out_fname,1,1) < 0) return(-1);
+				if(cmd_seq->out_cond == 1)
+					{if(my_file_dup(cmd_seq->out_fname,1,1) < 0) return(-1);}
+				else
+					{if(my_file_dup(cmd_seq->out_fname,2,1) < 0) return(-1);}
 			}
 		    if(cmd_seq->arglists[0][1] == NULL) {fprintf(stderr,"error : bg : no argument. Type bg --help\n"); return -1;}
 		    if(cmd_seq->arglists[0][2] != NULL) {fprintf(stderr,"error : bg : excess arguments\n"); return -1;}
@@ -67,7 +73,7 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 		}
 
 		if(strcmp(cmd_seq->arglists[0][0],"setenv") == 0){
-		    if(setenv_wrapper((const char**)cmd_seq->arglists[0],cmd_seq->in_fname,cmd_seq->out_fname) == -1) return -1;
+		    if(setenv_wrapper((const char**)cmd_seq->arglists[0],cmd_seq->in_fname,cmd_seq->out_fname,cmd_seq->out_cond) == -1) return -1;
 		    return 0;
 		}
 	}
@@ -110,7 +116,7 @@ int call_builtin(PIPE_LINE *cmd_seq, list *process_list, int i, int cases)
 		return(0);
 	    }
 	    if(strcmp(cmd_seq->arglists[cmd_seq->num_cmds-i][0],"setenv") == 0){
-		if(setenv_wrapper((const char**)cmd_seq->arglists[cmd_seq->num_cmds-i],cmd_seq->in_fname,cmd_seq->out_fname) == -1) return(-1);
+		if(builtin_setenv1((const char**)cmd_seq->arglists[cmd_seq->num_cmds-i]) == -1) return(-1);
 		return(0);
 	    }
 	}
@@ -153,7 +159,10 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
                 if(my_file_dup(cmd_seq->in_fname,0,0) < 0) exit(-1);
             }
             if(strcmp(cmd_seq->out_fname,"stdout") != 0){
-                if(my_file_dup(cmd_seq->out_fname,1,1) < 0) exit(-1);
+		if(cmd_seq->out_cond == 1)
+			{if(my_file_dup(cmd_seq->out_fname,1,1) < 0) exit(-1);}
+		else
+			{if(my_file_dup(cmd_seq->out_fname,2,1) < 0) exit(-1);}
             }
 	    if(cmd_seq->background == 0)  //check if background is zero
 	    {
@@ -227,7 +236,10 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 
             if(i == 1){
                 if(strcmp(cmd_seq->out_fname,"stdout") != 0){
-                    if(my_file_dup(cmd_seq->out_fname,1,1) < 0) exit(-1);
+			if(cmd_seq->out_cond == 1)
+				{if(my_file_dup(cmd_seq->out_fname,1,1) < 0) exit(-1);}
+			else
+				{if(my_file_dup(cmd_seq->out_fname,2,1) < 0) exit(-1);}
                 }
             }
             //if command is a builtin run it here, do not execute, finally exit

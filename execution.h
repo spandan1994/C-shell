@@ -9,6 +9,7 @@ typedef struct{
     char ***arglists;
     char in_fname[20];
     char out_fname[20];
+    int out_cond;
     int background;
     int job_id;
 }PIPE_LINE;

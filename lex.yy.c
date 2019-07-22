@@ -1131,6 +1131,8 @@ YY_RULE_SETUP
 			if(state == COMMAND || state == IFILE || state == START)
 			{
 				f_outdir = 1;
+				if(strcmp(yytext,">") == 0) command_seq.out_cond = 1;
+				else command_seq.out_cond = 2; 
 				f_valid = -1;
 				state = OREDIR;
 			}
@@ -1143,10 +1145,10 @@ YY_RULE_SETUP
 	}
 	YY_BREAK
 case 13:
-#line 372 "myshell.l"
+#line 374 "myshell.l"
 case 14:
 YY_RULE_SETUP
-#line 372 "myshell.l"
+#line 374 "myshell.l"
 {
 		if(f_indir)
 		{
@@ -1171,7 +1173,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 394 "myshell.l"
+#line 396 "myshell.l"
 {
 		if(state == COMMAND)
 		{
@@ -1189,7 +1191,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 409 "myshell.l"
+#line 411 "myshell.l"
 {
 		if(state == COMMAND || state == IFILE || state == OFILE)
 		{
@@ -1206,7 +1208,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 423 "myshell.l"
+#line 425 "myshell.l"
 {
 		f_valid = -1;
 		state = BACKGROUND_OPT;
@@ -1214,10 +1216,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 429 "myshell.l"
+#line 431 "myshell.l"
 ECHO;
 	YY_BREAK
-#line 1221 "lex.yy.c"
+#line 1223 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(ASSIGN):
 case YY_STATE_EOF(EXACT):
@@ -2227,7 +2229,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 429 "myshell.l"
+#line 431 "myshell.l"
 
 
 int yywrap()

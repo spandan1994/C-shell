@@ -14,7 +14,7 @@ int my_file_dup(char *fname, int mode, int fd){ //opens a file with name fname a
         if(new_fd < 0) {fprintf(stderr,"error : open\n"); return -1;}
     }
     else{
-        new_fd = open(fname,O_CREAT|O_APPEND,00600);
+        new_fd = open(fname,O_CREAT|O_APPEND|O_WRONLY,00600);
         if(new_fd < 0) {fprintf(stderr,"error : open\n"); return -1;}
     }
     dup2_st = dup2(new_fd,fd);
@@ -179,14 +179,17 @@ int fg_wrapper(char *path_name, list *process_list)
 }
 //---------------------------------------------------------------------------------------------------
 
-int builtin_setenv(const char **argv, const char *in_fname, const char *out_fname){
+int builtin_setenv(const char **argv, const char *in_fname, const char *out_fname, int out_cond){
     int dup2_st, env_st;
 
     if(strcmp(in_fname,"stdin") != 0){
 	if(my_file_dup((char *)in_fname,0,0) < 0) return -1;
     }
     if(strcmp(out_fname,"stdout") != 0){
-	if(my_file_dup((char *)out_fname,1,1) < 0) return -1;
+	    if(out_cond == 1)
+		{if(my_file_dup((char *)out_fname,1,1) < 0) return -1;}
+	    else
+	    	{if(my_file_dup((char *)out_fname,2,1) < 0) return -1;}
     }
 
     if(strcmp(argv[1],"--help") == 0){
@@ -250,12 +253,12 @@ int builtin_setenv1(const char **argv){
     return 0;
 }
 
-int setenv_wrapper(const char **argv, const char *in_fname, const char *out_fname){
+int setenv_wrapper(const char **argv, const char *in_fname, const char *out_fname, int out_cond){
     int temp_in = dup(0);
     if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
     int temp_out = dup(1);
     if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}
-    int env_st = builtin_setenv(argv, in_fname, out_fname);
+    int env_st = builtin_setenv(argv, in_fname, out_fname, out_cond);
     if(env_st < 0) {fprintf(stderr,"error : builtin_setenv\n"); return -1;}
     int dup2_st = dup2(temp_in,0);
     if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
@@ -267,14 +270,17 @@ int setenv_wrapper(const char **argv, const char *in_fname, const char *out_fnam
     return 0;
 }
 
-int builtin_jobs(char *path_name,list *process_list, const char *in_fname, const char *out_fname){
+int builtin_jobs(char *path_name,list *process_list, const char *in_fname, const char *out_fname, int out_cond){
     int dup2_st;
 
     if(strcmp(in_fname,"stdin") != 0){	
 	if(my_file_dup((char *)in_fname,0,0) < 0) return -1;
     }
     if(strcmp(out_fname,"stdout") != 0){
-	if(my_file_dup((char *)out_fname,1,1) < 0) return -1;
+	    if(out_cond == 1)
+		{if(my_file_dup((char *)out_fname,1,1) < 0) return -1;}
+	    else
+	    	{if(my_file_dup((char *)out_fname,2,1) < 0) return -1;}
     }
     if(strcmp(path_name,"--help") == 0){
         printf("Synopsis : jobs\n");
@@ -365,12 +371,12 @@ int builtin_jobs1(char *path_name,list *process_list){
     return 0;
 }
 
-int jobs_wrapper(char *path_name,list *process_list, const char *in_fname, const char *out_fname){
+int jobs_wrapper(char *path_name,list *process_list, const char *in_fname, const char *out_fname, int out_cond){
     int temp_in = dup(0);
     if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
     int temp_out = dup(1);
     if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}
-    int env_st = builtin_jobs(path_name,process_list,in_fname,out_fname);
+    int env_st = builtin_jobs(path_name,process_list,in_fname,out_fname, out_cond);
     if(env_st < 0) {fprintf(stderr,"error : builtin_jobs\n"); return -1;}
     int dup2_st = dup2(temp_in,0);
     if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
@@ -382,13 +388,16 @@ int jobs_wrapper(char *path_name,list *process_list, const char *in_fname, const
     return 0;
 }
 
-int builtin_unsetenv(const char *path_name, const char *in_fname, const char *out_fname){
+int builtin_unsetenv(const char *path_name, const char *in_fname, const char *out_fname, int out_cond){
     int dup2_st;
     if(strcmp(in_fname,"stdin") != 0){	
 	if(my_file_dup((char *)in_fname,0,0) < 0) return -1;
     }
     if(strcmp(out_fname,"stdout") != 0){
-	if(my_file_dup((char *)out_fname,1,1) < 0) return -1;
+	    if(out_cond == 1)
+		{if(my_file_dup((char *)out_fname,1,1) < 0) return -1;}
+	    else
+	    	{if(my_file_dup((char *)out_fname,2,1) < 0) return -1;}
     }
     if(strcmp(path_name,"--help") == 0){
         printf("Synopsis : unsetenv variable_name\n");
@@ -421,12 +430,12 @@ int builtin_unsetenv1(const char *path_name){
     return 0;
 }
 
-int unsetenv_wrapper(const char *path_name, const char *in_fname, const char *out_fname){
+int unsetenv_wrapper(const char *path_name, const char *in_fname, const char *out_fname, int out_cond){
     int temp_in = dup(0);
     if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
     int temp_out = dup(1);
     if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}
-    int env_st = builtin_unsetenv(path_name,in_fname,out_fname);
+    int env_st = builtin_unsetenv(path_name,in_fname,out_fname, out_cond);
     if(env_st < 0) {fprintf(stderr,"error : builtin_unsetenv\n"); return -1;}
     int dup2_st = dup2(temp_in,0);
     if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
@@ -438,13 +447,16 @@ int unsetenv_wrapper(const char *path_name, const char *in_fname, const char *ou
     return 0;
 }
 
-int builtin_cd(const char *path_name, const char *in_fname, const char *out_fname){
+int builtin_cd(const char *path_name, const char *in_fname, const char *out_fname, int out_cond){
     int dup2_st;
     if(strcmp(in_fname,"stdin") != 0){	
 	if(my_file_dup((char *)in_fname,0,0) < 0) return -1;
     }
     if(strcmp(out_fname,"stdout") != 0){
-	if(my_file_dup((char *)out_fname,1,1) < 0) return -1;
+	    if(out_cond == 1)
+		{if(my_file_dup((char *)out_fname,1,1) < 0) return -1;}
+	    else
+	    	{if(my_file_dup((char *)out_fname,2,1) < 0) return -1;}
     }
     int cd_st = chdir(path_name);
     if(cd_st < 0) {fprintf(stderr,"error : chdir\n"); return -1;}
@@ -453,12 +465,12 @@ int builtin_cd(const char *path_name, const char *in_fname, const char *out_fnam
 }
 
 
-int cd_wrapper(const char *path_name, const char *in_fname, const char *out_fname){
+int cd_wrapper(const char *path_name, const char *in_fname, const char *out_fname, int out_cond){
     int temp_in = dup(0);
     if(temp_in < 0) {fprintf(stderr,"error : dup\n"); return -1;}
     int temp_out = dup(1);
     if(temp_out < 0) {fprintf(stderr,"error : dup\n"); return -1;}
-    int cd_st = builtin_cd(path_name,in_fname,out_fname);
+    int cd_st = builtin_cd(path_name,in_fname,out_fname, out_cond);
     if(cd_st < 0) {fprintf(stderr,"error : builtin_cd\n"); return -1;}
     int dup2_st = dup2(temp_in,0);
     if(dup2_st < 0) {fprintf(stderr,"error : dup2\n"); return -1;}
