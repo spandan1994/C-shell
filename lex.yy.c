@@ -527,6 +527,7 @@ struct sigaction signal_act;  //for signal handling
 D_array list_files;  //for storing all executable command names
 DIR *directory;  //for opendir
 struct dirent *dir_fname;  //for readdir
+char *builtin_command_list[] = {"cd","jobs","fg","bg","setenv","unsetenv",NULL};  //all builtin commands
 
 char* commands[MAX_COMMANDS_NO][MAX_ARGS_NO];
 char* input_fname = NULL;
@@ -556,9 +557,9 @@ static struct pam_conv conv =
 };
 
 
-#line 560 "lex.yy.c"
+#line 561 "lex.yy.c"
 
-#line 562 "lex.yy.c"
+#line 563 "lex.yy.c"
 
 #define INITIAL 0
 #define ASSIGN 1
@@ -780,10 +781,10 @@ YY_DECL
 		}
 
 	{
-#line 102 "myshell.l"
+#line 103 "myshell.l"
 
 
-#line 787 "lex.yy.c"
+#line 788 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -843,7 +844,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 104 "myshell.l"
+#line 105 "myshell.l"
 {	
 					char *declare_text = strdup(yytext);
 					int i;
@@ -859,7 +860,7 @@ YY_RULE_SETUP
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 116 "myshell.l"
+#line 117 "myshell.l"
 {
 				if(state == VAL)
 				{
@@ -884,7 +885,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 138 "myshell.l"
+#line 139 "myshell.l"
 {
 			if(state == VAL)
 			{
@@ -909,12 +910,12 @@ YY_RULE_SETUP
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 160 "myshell.l"
+#line 161 "myshell.l"
 ;  //ignore;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 162 "myshell.l"
+#line 163 "myshell.l"
 {
 				if(state == START)
 				{
@@ -934,7 +935,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 179 "myshell.l"
+#line 180 "myshell.l"
 {
 			if(state == START)
 			{
@@ -952,7 +953,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 194 "myshell.l"
+#line 195 "myshell.l"
 {
 				f_valid = -1;
 				state = BACKGROUND_OPT;
@@ -962,12 +963,12 @@ YY_RULE_SETUP
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 202 "myshell.l"
+#line 203 "myshell.l"
 ; 		//ignore
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 204 "myshell.l"
+#line 205 "myshell.l"
 {
 		if(state == COMMAND)
 		{
@@ -990,7 +991,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 224 "myshell.l"
+#line 225 "myshell.l"
 {
 			if(state == START)
 			{
@@ -1126,10 +1127,10 @@ YY_RULE_SETUP
 		}
 	YY_BREAK
 case 11:
-#line 359 "myshell.l"
+#line 360 "myshell.l"
 case 12:
 YY_RULE_SETUP
-#line 359 "myshell.l"
+#line 360 "myshell.l"
 {
 		if(f_outdir)
 		{
@@ -1155,10 +1156,10 @@ YY_RULE_SETUP
 	}
 	YY_BREAK
 case 13:
-#line 384 "myshell.l"
+#line 385 "myshell.l"
 case 14:
 YY_RULE_SETUP
-#line 384 "myshell.l"
+#line 385 "myshell.l"
 {
 		if(f_indir)
 		{
@@ -1183,7 +1184,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 406 "myshell.l"
+#line 407 "myshell.l"
 {
 		if(state == COMMAND)
 		{
@@ -1201,7 +1202,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 421 "myshell.l"
+#line 422 "myshell.l"
 {
 		if(state == COMMAND || state == IFILE || state == OFILE)
 		{
@@ -1218,7 +1219,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 435 "myshell.l"
+#line 436 "myshell.l"
 {
 		f_valid = -1;
 		state = BACKGROUND_OPT;
@@ -1226,10 +1227,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 441 "myshell.l"
+#line 442 "myshell.l"
 ECHO;
 	YY_BREAK
-#line 1233 "lex.yy.c"
+#line 1234 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(ASSIGN):
 case YY_STATE_EOF(EXACT):
@@ -2239,7 +2240,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 441 "myshell.l"
+#line 442 "myshell.l"
 
 
 int yywrap()
@@ -2562,6 +2563,10 @@ int main(int argc, char** argv)
                                 append(&list_files,dir_fname->d_name);
                         }
                 }
+		for(int i = 0 ; builtin_command_list[i] != NULL ; i++)
+		{
+			append(&list_files,builtin_command_list[i]);
+		}
                 closedir(directory);
                 path_token = strtok(NULL, ":");
         }

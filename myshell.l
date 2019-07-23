@@ -66,6 +66,7 @@ struct sigaction signal_act;  //for signal handling
 D_array list_files;  //for storing all executable command names
 DIR *directory;  //for opendir
 struct dirent *dir_fname;  //for readdir
+char *builtin_command_list[] = {"cd","jobs","fg","bg","setenv","unsetenv",NULL};  //all builtin commands
 
 char* commands[MAX_COMMANDS_NO][MAX_ARGS_NO];
 char* input_fname = NULL;
@@ -760,6 +761,10 @@ int main(int argc, char** argv)
                                 append(&list_files,dir_fname->d_name);
                         }
                 }
+		for(int i = 0 ; builtin_command_list[i] != NULL ; i++)
+		{
+			append(&list_files,builtin_command_list[i]);
+		}
                 closedir(directory);
                 path_token = strtok(NULL, ":");
         }
