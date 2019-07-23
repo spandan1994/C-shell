@@ -14,6 +14,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
+#include <dirent.h>
 
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
@@ -22,7 +23,7 @@
 #include <readline/history.h>
 
 #include "execution.h"
-#include "variable_list.h" 
+#include "variable_list.h"
 
 #ifndef DEBUG
 	#define DEBUG 
@@ -33,6 +34,12 @@
 #define MAX_ARGS_NO 20						
 #define MAX_PNAME_LEN PATH_MAX
 #define MAX_UNAME_LEN LOGIN_NAME_MAX
+
+typedef struct{
+    size_t max_size;
+    size_t size;
+    char **array;
+}D_array;  //for storing command names
 
 enum {
 	START = 0,
@@ -56,6 +63,9 @@ char *var_name; //spandan (for dumping variable name that is to be searched)
 NODE *Found; //spandan (for searching variable name)
 struct termios term_in, term_out;  //for storing and restoring terminal during execution
 struct sigaction signal_act;  //for signal handling
+D_array list_files;  //for storing all executable command names
+DIR *directory;  //for opendir
+struct dirent *dir_fname;  //for readdir
 
 char* commands[MAX_COMMANDS_NO][MAX_ARGS_NO];
 char* input_fname = NULL;
@@ -436,6 +446,23 @@ int yywrap()
 
 }
 
+//dynamic array functions-----------------------------------------------------------
+void init_dynamic(D_array *A){
+    A->max_size = 100;
+    A->size = 0;
+    A->array = (char **)malloc((A->max_size) * sizeof(char *));
+}
+
+void append(D_array *A, char *str){
+    if(A->size >= A->max_size){
+        A->max_size = (A->max_size) * 2;
+        A->array = (char **)realloc(A->array,(A->max_size) * sizeof(char *));
+    }
+    A->array[A->size] = strdup(str);
+    A->size++;
+}
+//dynamic array functions----------------------------------------------------------
+
 void print_command_storage(void)
 {
 	#ifdef DEFINE
@@ -617,6 +644,47 @@ void setup_rc(void)
 	else fclose(fp);
 }
 
+//for command completion--------------------------------------------------------------------------
+char *command_generator(const char *text, int state)
+{
+        static int list_index, len;
+        char *name;
+
+        if (!state)
+        {
+                list_index = 0;
+                len = strlen (text);
+        }
+
+        while (list_index < list_files.size)
+        {
+                name = list_files.array[list_index];
+                list_index++;
+
+                if (strncmp (name, text, len) == 0)
+                return (strdup(name));
+        }
+
+        return ((char *)NULL);
+}
+
+char **cmdname_completion (const char *text, int start, int end)
+{
+        char **matches;
+
+        matches = (char **)NULL;
+
+        if (start == 0)
+                matches = rl_completion_matches (text, command_generator);
+
+        return (matches);
+}
+
+void initialize_readline ()
+{
+        rl_attempted_completion_function = cmdname_completion;
+}
+//for command completion----------------------------------------------------------------------------
 
 void set_default_variables(void)
 {
@@ -677,6 +745,27 @@ int main(int argc, char** argv)
 	process_list = Createlist(); //for storing background process info
 	var_list = CreateLIST(); //for storing declared variable and their values	
 	set_default_variables(); //set some default variables
+
+//readline setting for command name completion-------------------------------------------------------------
+	char *path_var = strdup(getenv("PATH"));
+	char *path_token = strtok(path_var,":");
+
+	init_dynamic(&list_files);
+	while (path_token != NULL) {
+                directory = opendir(path_token);
+                while( (dir_fname = readdir(directory)) != NULL )
+                {
+                        if( strcmp(dir_fname->d_name,".") != 0 && strcmp(dir_fname->d_name,"..") != 0 )
+                        {
+                                append(&list_files,dir_fname->d_name);
+                        }
+                }
+                closedir(directory);
+                path_token = strtok(NULL, ":");
+        }
+
+	initialize_readline();
+//command completion--------------------------------------------------------------------------------------
 
 	for(int job = 1 ; ;)
 	{

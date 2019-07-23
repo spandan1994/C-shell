@@ -475,6 +475,7 @@ char *yytext;
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
+#include <dirent.h>
 
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
@@ -483,7 +484,7 @@ char *yytext;
 #include <readline/history.h>
 
 #include "execution.h"
-#include "variable_list.h" 
+#include "variable_list.h"
 
 #ifndef DEBUG
 	#define DEBUG 
@@ -494,6 +495,12 @@ char *yytext;
 #define MAX_ARGS_NO 20						
 #define MAX_PNAME_LEN PATH_MAX
 #define MAX_UNAME_LEN LOGIN_NAME_MAX
+
+typedef struct{
+    size_t max_size;
+    size_t size;
+    char **array;
+}D_array;  //for storing command names
 
 enum {
 	START = 0,
@@ -517,6 +524,9 @@ char *var_name; //spandan (for dumping variable name that is to be searched)
 NODE *Found; //spandan (for searching variable name)
 struct termios term_in, term_out;  //for storing and restoring terminal during execution
 struct sigaction signal_act;  //for signal handling
+D_array list_files;  //for storing all executable command names
+DIR *directory;  //for opendir
+struct dirent *dir_fname;  //for readdir
 
 char* commands[MAX_COMMANDS_NO][MAX_ARGS_NO];
 char* input_fname = NULL;
@@ -546,9 +556,9 @@ static struct pam_conv conv =
 };
 
 
-#line 550 "lex.yy.c"
+#line 560 "lex.yy.c"
 
-#line 552 "lex.yy.c"
+#line 562 "lex.yy.c"
 
 #define INITIAL 0
 #define ASSIGN 1
@@ -770,10 +780,10 @@ YY_DECL
 		}
 
 	{
-#line 92 "myshell.l"
+#line 102 "myshell.l"
 
 
-#line 777 "lex.yy.c"
+#line 787 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -833,7 +843,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 94 "myshell.l"
+#line 104 "myshell.l"
 {	
 					char *declare_text = strdup(yytext);
 					int i;
@@ -849,7 +859,7 @@ YY_RULE_SETUP
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 106 "myshell.l"
+#line 116 "myshell.l"
 {
 				if(state == VAL)
 				{
@@ -874,7 +884,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 128 "myshell.l"
+#line 138 "myshell.l"
 {
 			if(state == VAL)
 			{
@@ -899,12 +909,12 @@ YY_RULE_SETUP
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 150 "myshell.l"
+#line 160 "myshell.l"
 ;  //ignore;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 152 "myshell.l"
+#line 162 "myshell.l"
 {
 				if(state == START)
 				{
@@ -924,7 +934,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 169 "myshell.l"
+#line 179 "myshell.l"
 {
 			if(state == START)
 			{
@@ -942,7 +952,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 184 "myshell.l"
+#line 194 "myshell.l"
 {
 				f_valid = -1;
 				state = BACKGROUND_OPT;
@@ -952,12 +962,12 @@ YY_RULE_SETUP
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 192 "myshell.l"
+#line 202 "myshell.l"
 ; 		//ignore
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 194 "myshell.l"
+#line 204 "myshell.l"
 {
 		if(state == COMMAND)
 		{
@@ -980,7 +990,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 214 "myshell.l"
+#line 224 "myshell.l"
 {
 			if(state == START)
 			{
@@ -1116,10 +1126,10 @@ YY_RULE_SETUP
 		}
 	YY_BREAK
 case 11:
-#line 349 "myshell.l"
+#line 359 "myshell.l"
 case 12:
 YY_RULE_SETUP
-#line 349 "myshell.l"
+#line 359 "myshell.l"
 {
 		if(f_outdir)
 		{
@@ -1145,10 +1155,10 @@ YY_RULE_SETUP
 	}
 	YY_BREAK
 case 13:
-#line 374 "myshell.l"
+#line 384 "myshell.l"
 case 14:
 YY_RULE_SETUP
-#line 374 "myshell.l"
+#line 384 "myshell.l"
 {
 		if(f_indir)
 		{
@@ -1173,7 +1183,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 396 "myshell.l"
+#line 406 "myshell.l"
 {
 		if(state == COMMAND)
 		{
@@ -1191,7 +1201,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 411 "myshell.l"
+#line 421 "myshell.l"
 {
 		if(state == COMMAND || state == IFILE || state == OFILE)
 		{
@@ -1208,7 +1218,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 425 "myshell.l"
+#line 435 "myshell.l"
 {
 		f_valid = -1;
 		state = BACKGROUND_OPT;
@@ -1216,10 +1226,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 431 "myshell.l"
+#line 441 "myshell.l"
 ECHO;
 	YY_BREAK
-#line 1223 "lex.yy.c"
+#line 1233 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(ASSIGN):
 case YY_STATE_EOF(EXACT):
@@ -2229,7 +2239,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 431 "myshell.l"
+#line 441 "myshell.l"
 
 
 int yywrap()
@@ -2237,6 +2247,23 @@ int yywrap()
 	return 1;
 
 }
+
+//dynamic array functions-----------------------------------------------------------
+void init_dynamic(D_array *A){
+    A->max_size = 100;
+    A->size = 0;
+    A->array = (char **)malloc((A->max_size) * sizeof(char *));
+}
+
+void append(D_array *A, char *str){
+    if(A->size >= A->max_size){
+        A->max_size = (A->max_size) * 2;
+        A->array = (char **)realloc(A->array,(A->max_size) * sizeof(char *));
+    }
+    A->array[A->size] = strdup(str);
+    A->size++;
+}
+//dynamic array functions----------------------------------------------------------
 
 void print_command_storage(void)
 {
@@ -2419,6 +2446,47 @@ void setup_rc(void)
 	else fclose(fp);
 }
 
+//for command completion--------------------------------------------------------------------------
+char *command_generator(const char *text, int state)
+{
+        static int list_index, len;
+        char *name;
+
+        if (!state)
+        {
+                list_index = 0;
+                len = strlen (text);
+        }
+
+        while (list_index < list_files.size)
+        {
+                name = list_files.array[list_index];
+                list_index++;
+
+                if (strncmp (name, text, len) == 0)
+                return (strdup(name));
+        }
+
+        return ((char *)NULL);
+}
+
+char **cmdname_completion (const char *text, int start, int end)
+{
+        char **matches;
+
+        matches = (char **)NULL;
+
+        if (start == 0)
+                matches = rl_completion_matches (text, command_generator);
+
+        return (matches);
+}
+
+void initialize_readline ()
+{
+        rl_attempted_completion_function = cmdname_completion;
+}
+//for command completion----------------------------------------------------------------------------
 
 void set_default_variables(void)
 {
@@ -2479,6 +2547,27 @@ int main(int argc, char** argv)
 	process_list = Createlist(); //for storing background process info
 	var_list = CreateLIST(); //for storing declared variable and their values	
 	set_default_variables(); //set some default variables
+
+//readline setting for command name completion-------------------------------------------------------------
+	char *path_var = strdup(getenv("PATH"));
+	char *path_token = strtok(path_var,":");
+
+	init_dynamic(&list_files);
+	while (path_token != NULL) {
+                directory = opendir(path_token);
+                while( (dir_fname = readdir(directory)) != NULL )
+                {
+                        if( strcmp(dir_fname->d_name,".") != 0 && strcmp(dir_fname->d_name,"..") != 0 )
+                        {
+                                append(&list_files,dir_fname->d_name);
+                        }
+                }
+                closedir(directory);
+                path_token = strtok(NULL, ":");
+        }
+
+	initialize_readline();
+//command completion--------------------------------------------------------------------------------------
 
 	for(int job = 1 ; ;)
 	{
