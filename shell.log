@@ -1,1 +1,4 @@
 user authenticated
+command: ls --color=auto 
+command: less 
+input stdin output stdout backopt 1

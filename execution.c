@@ -134,7 +134,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
     static int new_gid = 0;  //new_gid for background pipeline
     struct sigaction signal_act;  //for handling stop signal
     //fprintf(stderr,"value of i = %d\n",new_gid);
-    //int temp_out = 0;
+    pid_t shell_GID = getpgid(0);  //group id of shell
     if(i > cmd_seq->num_cmds) {i = 1; new_gid = 0; return 0;}
 
 //there is a single command------------------------------------------------------------------------------------------------
@@ -151,9 +151,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 	    signal_default();  //default signaling in the children
 	    //run in background--------------------------
 	    if(cmd_seq->background == 0)
-	    {
-		setpgid(0,0);
-	    }
+	    	setpgid(0,0);
 	    //------------------------------------------
             if(strcmp(cmd_seq->in_fname,"stdin") != 0){
                 if(my_file_dup(cmd_seq->in_fname,0,0) < 0) exit(-1);
@@ -181,11 +179,6 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 	    if(cmd_seq->background == 0)
 	    {
 		pushfront(process_list,new);
-		/*wait_st = waitpid(status,&wstatus,WUNTRACED|WNOHANG);
-		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
-		if( WIFSTOPPED(wstatus) ) fprintf(stderr,"%d stopped\n",status);
-		else if( WIFEXITED(wstatus) ) {fprintf(stderr,"%d exited\n",status); new->status=1;}
-		else if( WIFCONTINUED(wstatus) ) fprintf(stderr,"%d continued\n",status);*/
 	    }
 
             if(cmd_seq->background){
@@ -217,9 +210,7 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 	    signal_default();  //default signaling in the children 
 	    //run in background----------------------------------------------
 	    if(cmd_seq->background == 0)
-	    {
-		setpgid(0,new_gid);  //all processes in the pipeline should have same gid
-	    }
+	    	setpgid(0,new_gid);  //all processes in the pipeline should have same gid
 	    //---------------------------------------------------------------
             if(i == cmd_seq->num_cmds){
                 if(strcmp(cmd_seq->in_fname,"stdin") != 0){
@@ -258,11 +249,6 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
 	    if(cmd_seq->background == 0)
 	    {
 		pushfront(process_list,new);
-		/*wait_st = waitpid(status,&wstatus,WUNTRACED|WNOHANG);
-		if(wait_st < 0) {fprintf(stderr,"error : wait\n"); return -1;}
-		if( WIFSTOPPED(wstatus) ) fprintf(stderr,"%d stopped\n",status);
-		else if( WIFEXITED(wstatus) ) {fprintf(stderr,"%d exited\n",status); new->status = 1;}
-		else if( WIFCONTINUED(wstatus) ) fprintf(stderr,"%d continued\n",status);*/
 	    }
 	    
 	    if(i == 1) new_gid = status;  //all processes in the pipeline should have same gid
