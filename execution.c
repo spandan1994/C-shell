@@ -134,7 +134,6 @@ int execution(PIPE_LINE *cmd_seq, list *process_list){
     static int new_gid = 0;  //new_gid for background pipeline
     struct sigaction signal_act;  //for handling stop signal
     //fprintf(stderr,"value of i = %d\n",new_gid);
-    pid_t shell_GID = getpgid(0);  //group id of shell
     if(i > cmd_seq->num_cmds) {i = 1; new_gid = 0; return 0;}
 
 //there is a single command------------------------------------------------------------------------------------------------

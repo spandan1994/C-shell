@@ -30,11 +30,11 @@ void signal_ignore(void)
 	signal_act.sa_handler = SIG_IGN;
 	sigaction (SIGINT, &signal_act, NULL);
         sigaction (SIGQUIT, &signal_act, NULL);
-        sigaction (SIGTSTP, &signal_act, NULL);
         sigaction (SIGTTIN, &signal_act, NULL);
         sigaction (SIGTTOU, &signal_act, NULL);
         sigaction (SIGCHLD, &signal_act, NULL);
 	sigaction (SIGHUP, &signal_act, NULL);
+        sigaction (SIGTSTP, &signal_act, NULL);
 }
 
 void signal_default(void)
@@ -43,11 +43,11 @@ void signal_default(void)
 	signal_act.sa_handler = SIG_DFL;
 	sigaction (SIGINT, &signal_act, NULL);
         sigaction (SIGQUIT, &signal_act, NULL);
-        sigaction (SIGTSTP, &signal_act, NULL);
         sigaction (SIGTTIN, &signal_act, NULL);
         sigaction (SIGTTOU, &signal_act, NULL);
         sigaction (SIGCHLD, &signal_act, NULL);
 	sigaction (SIGHUP, &signal_act, NULL);
+        sigaction (SIGTSTP, &signal_act, NULL);
 }
 //utilities_end-----------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ int search_env(char *command){
 
 int builtin_bg(char *path_name, list *process_list)
 {
-
+    pid_t shell_GID = getpgid(0);
     if(strcmp(path_name,"--help") == 0){
         printf("Synopsis : bg pname\n");
         printf("           bg --help\n\n");
@@ -115,7 +115,15 @@ int builtin_bg(char *path_name, list *process_list)
 	if(process_id < 0) {fprintf(stderr,"error : no such process\n"); return 0;}
 	pid_t pgid = getpgid( process_id );
 	if(pgid < 0) {fprintf(stderr,"error : getpgid\n"); return(-1);}
-	if(kill( -pgid , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
+	
+	if( shell_GID == pgid )
+	{
+		if(kill( process_id , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
+	}
+	else
+	{
+		if(kill( -pgid , SIGCONT ) < 0) {fprintf(stderr,"error : kill\n"); return(-1);}
+	}
 
 	return 0;
     }

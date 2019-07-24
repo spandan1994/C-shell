@@ -809,6 +809,17 @@ int main(int argc, char** argv)
 		Update(process_list);
 //background processes---------------------------------------------------------------------------------------------------------------
 
+//stop every process in background before printing shell prompt----------------------------------------------------------------------
+		temp = process_list->head;
+		pid_t shell_GID = getpgid(0);
+		while(temp != NULL)
+		{
+			pid_t current_bg_process_gid = getpgid( (temp->p_pid) );
+			if(shell_GID == current_bg_process_gid) kill( (temp->p_pid) , SIGTSTP );
+			temp = temp->next;
+		}
+//stop processes in background before printing shell prompt--------------------------------------------------------------------------
+
 		if((buf = readline(prompt)) != NULL )
 		{
 			if (strlen(buf) > 0) 

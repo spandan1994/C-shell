@@ -1,4 +1,14 @@
 user authenticated
+command: cd 
+input execution.h output a backopt 1
+command: cd SPANDAN/Computer-Science/Sem2/OS/project/update_shell/myshell/'= 
+input stdin output stdout backopt 1
+error : exec_wrapper
+command: cd SPANDAN/Computer-Science/Sem2/OS/project/update_shell/myshell/ 
+input stdin output stdout backopt 1
 command: ls --color=auto 
-command: less 
+input stdin output stdout backopt 1
+command: rm a 
+input stdin output stdout backopt 1
+command: ls --color=auto 
 input stdin output stdout backopt 1
